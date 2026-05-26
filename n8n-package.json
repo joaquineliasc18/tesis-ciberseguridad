@@ -1,0 +1,13 @@
+{
+  "name": "n8n-service",
+  "version": "1.0.0",
+  "description": "n8n automation service for cybersecurity evaluation system",
+  "main": "n8n-init.js",
+  "scripts": {
+    "start": "node n8n-init.js"
+  },
+  "dependencies": {
+    "n8n": "latest",
+    "axios": "^1.6.0"
+  }
+}

@@ -1,0 +1,759 @@
+/**
+ * Estilos personalizados para el Sistema de Gestión de Archivos
+ * Diseño ejecutivo, minimalista y moderno para tesis universitaria
+ */
+
+/* Variables CSS para consistencia visual */
+:root {
+  /* Paleta de colores profesional corporativa */
+  --primary-color: #2563eb;
+  --primary-dark: #1e40af;
+  --primary-light: #3b82f6;
+  --secondary-color: #1e3a8a;
+  --accent-color: #60a5fa;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --bg-light: #f8fafc;
+  --text-dark: #1f2937;
+  --text-gray: #6b7280;
+  --border-color: #e5e7eb;
+  
+  /* Gradientes */
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --success-gradient: linear-gradient(135deg, #059669 0%, var(--success-color) 100%);
+  --warning-gradient: linear-gradient(135deg, #d97706 0%, var(--warning-color) 100%);
+  --danger-gradient: linear-gradient(135deg, #dc2626 0%, var(--danger-color) 100%);
+  
+  /* Sombras */
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-medium: 0 4px 12px rgba(37, 99, 235, 0.15);
+  --shadow-heavy: 0 10px 25px rgba(37, 99, 235, 0.2);
+  
+  --border-radius: 0.75rem;
+  --transition: all 0.3s ease;
+}
+
+/* Reset y configuración base */
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--bg-light) 0%, #e5e7eb 100%);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Mejoras del header */
+.navbar-brand {
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+
+.navbar-brand:hover {
+  transform: translateY(-2px);
+}
+
+/* Zona de subida de archivos */
+.upload-zone {
+  border-color: var(--primary-color) !important;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, rgba(30, 58, 138, 0.02) 100%);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.upload-zone:hover {
+  border-color: var(--primary-light) !important;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(30, 58, 138, 0.05) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.upload-zone:hover::before {
+  left: 100%;
+}
+
+.upload-zone.drag-over {
+  border-color: var(--success-color) !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Cards con estilo ejecutivo */
+.card {
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.card-header.bg-gradient {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-header.bg-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+/* Botones con estilo ejecutivo */
+.btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.4s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+  background: var(--primary-gradient);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Tabla con estilo moderno */
+.table {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.table tbody tr {
+  transition: var(--transition);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+  transform: scale(1.005);
+  box-shadow: var(--shadow-light);
+}
+
+/* Estados de procesamiento con colores */
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-pending {
+  background: var(--warning-gradient);
+  color: white;
+  animation: pulse-warning 2s infinite;
+}
+
+.status-processing {
+  background: var(--primary-gradient);
+  color: white;
+  animation: pulse-primary 1.5s infinite;
+}
+
+.status-completed {
+  background: var(--success-gradient);
+  color: white;
+}
+
+.status-error {
+  background: var(--danger-gradient);
+  color: white;
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Animaciones */
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes pulse-primary {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efectos de aparición */
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Spinner personalizado */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Mejoras para la paginación */
+.pagination .page-link {
+  border-radius: 0.375rem;
+  margin: 0 0.125rem;
+  border: 1px solid #dee2e6;
+  transition: var(--transition);
+}
+
+.pagination .page-link:hover {
+  background: var(--primary-gradient);
+  border-color: transparent;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary-gradient);
+  border-color: transparent;
+}
+
+/* Estados especiales */
+.empty-state, .loading-state {
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
+.empty-state:hover {
+  opacity: 1;
+}
+
+/* Alertas personalizadas */
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+}
+
+.alert-success {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+  border-left: 4px solid #198754;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(232, 62, 140, 0.1) 100%);
+  border-left: 4px solid #dc3545;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(111, 66, 193, 0.1) 100%);
+  border-left: 4px solid #0d6efd;
+}
+
+/* Modal personalizado */
+.modal-content {
+  border-radius: var(--border-radius);
+  border: none;
+  box-shadow: var(--shadow-heavy);
+}
+
+.modal-header {
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .upload-zone {
+    padding: 2rem !important;
+  }
+  
+  .btn-lg {
+    padding: 0.625rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .navbar-brand small {
+    font-size: 0.75rem;
+  }
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selección de texto */
+::selection {
+  background: rgba(13, 110, 253, 0.2);
+  color: #0d6efd;
+}
+
+/* Focus personalizado */
+.btn:focus, .form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: #0d6efd;
+}
+
+/* Mejoras de accesibilidad */
+.btn:focus-visible, .form-control:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Transiciones globales */
+* {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid rgba(0,0,0,0.05);
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+}
+
+/* === ESTILOS PARA GUÍA DE PASOS === */
+
+/* Contenedor de la guía */
+.step-guide {
+  position: relative;
+}
+
+/* Línea conectora vertical */
+.step-guide::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 50px;
+  bottom: 100px;
+  width: 2px;
+  background: linear-gradient(180deg, #e9ecef 0%, #dee2e6 50%, #e9ecef 100%);
+  z-index: 1;
+}
+
+/* Elementos de paso individuales */
+.step-item {
+  position: relative;
+  z-index: 2;
+}
+
+/* Números de paso */
+.step-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-medium);
+  transition: var(--transition);
+  z-index: 3;
+  position: relative;
+  border: 3px solid #ffffff;
+}
+
+/* Efectos hover para números */
+.step-number:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Colores específicos para cada paso */
+.step-item:nth-child(1) .step-number {
+  background: linear-gradient(135deg, #0d6efd 0%, #4c84ff 100%);
+}
+
+.step-item:nth-child(2) .step-number {
+  background: linear-gradient(135deg, #0dcaf0 0%, #3dd5f3 100%);
+}
+
+.step-item:nth-child(3) .step-number {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+
+/* Contenido de paso */
+.step-content h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.step-content p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+/* Botón del enlace */
+.step-content .btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.step-content .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Alertas dentro de pasos */
+.step-content .alert {
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  margin-bottom: 0;
+  border-radius: 0.5rem;
+  border-width: 1px;
+}
+
+/* Animaciones de entrada */
+.step-item {
+  animation: slideInLeft 0.6s ease forwards;
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.step-item:nth-child(1) { animation-delay: 0.1s; }
+.step-item:nth-child(2) { animation-delay: 0.2s; }
+.step-item:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Sección de beneficios */
+.step-guide + .mt-4 {
+  animation: fadeInUp 0.8s ease 0.4s forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Lista de beneficios */
+.list-unstyled li {
+  padding: 0.25rem 0;
+  transition: var(--transition);
+}
+
+.list-unstyled li:hover {
+  transform: translateX(5px);
+  color: var(--bs-success) !important;
+}
+
+/* ========================================
+   ESTILOS ADICIONALES DASHBOARD
+   ======================================== */
+
+/* Reset body margins */
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Navbar profesional */
+.navbar {
+  background: var(--primary-gradient) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.navbar-brand small {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.btn-outline-light {
+  border-width: 2px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+}
+
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.badge {
+  font-weight: 600;
+  padding: 0.4em 0.7em;
+  border-radius: 6px;
+}
+
+.dropdown-menu {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: none;
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-light);
+  color: var(--primary-color);
+}
+
+.card-header.bg-dark {
+  background: var(--primary-gradient) !important;
+}
+
+.step-number {
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.bg-primary {
+  background: var(--primary-color) !important;
+}
+
+.btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.border-info {
+  border-color: var(--accent-color) !important;
+}
+
+.text-info {
+  color: var(--accent-color) !important;
+}
+
+.bg-info {
+  background: var(--accent-color) !important;
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.bg-success {
+  background: var(--success-color) !important;
+}
+
+/* Efectos responsive para la guía */
+@media (max-width: 991.98px) {
+  .step-guide::before {
+    left: 15px;
+  }
+  
+  .step-number {
+    width: 35px !important;
+    height: 35px !important;
+    min-width: 35px !important;
+    font-size: 0.8rem;
+  }
+  
+  .step-content h5 {
+    font-size: 1rem;
+  }
+  
+  .step-content p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .step-guide::before {
+    display: none;
+  }
+  
+  .step-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .step-number {
+    margin: 0 auto 1rem auto !important;
+  }
+}
+/* ======================================== */
+/* ESTILOS EJECUTIVOS PARA MODAL EVALUACIÓN */
+/* ======================================== */
+
+/* Modal extra large para evaluación */
+.modal-xl {
+  max-width: 1200px;
+}
+
+/* Cards con efecto de elevación en hover */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+
+/* Animación suave de progreso bars */
+.progress-bar {
+  transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Cards redondeadas con mejor diseño */
+.card {
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Hover efecto en botones de acción */
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #5b21b6 100%);
+  border: none;
+}
+
+/* Animación de entrada para las cards de dimensiones */
+@keyframes fadeInUpEval {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#evaluationModal .col-lg-6:nth-child(1) { animation: fadeInUpEval 0.4s ease 0.1s both; }
+#evaluationModal .col-lg-6:nth-child(2) { animation: fadeInUpEval 0.4s ease 0.2s both; }
+#evaluationModal .col-lg-6:nth-child(3) { animation: fadeInUpEval 0.4s ease 0.3s both; }
+#evaluationModal .col-lg-6:nth-child(4) { animation: fadeInUpEval 0.4s ease 0.4s both; }
+#evaluationModal .col-lg-6:nth-child(5) { animation: fadeInUpEval 0.4s ease 0.5s both; }
+#evaluationModal .col-lg-6:nth-child(6) { animation: fadeInUpEval 0.4s ease 0.6s both; }
+#evaluationModal .col-lg-6:nth-child(7) { animation: fadeInUpEval 0.4s ease 0.7s both; }
+
+/* Mejor diseño responsive para KPIs */
+@media (max-width: 768px) {
+  .modal-xl {
+    max-width: 95%;
+    margin: 0.5rem;
+  }
+}
+
+/* Botón de cerrar flotante en modal de evaluación */
+#evaluationModal .btn-close {
+  background-color: white;
+  border-radius: 50%;
+  padding: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+#evaluationModal .btn-close:hover {
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1);
+}

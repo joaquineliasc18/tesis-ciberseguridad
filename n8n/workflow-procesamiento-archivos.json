@@ -1,0 +1,129 @@
+{
+  "name": "Automated Document Processor - Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "file_uploaded",
+        "options": {}
+      },
+      "id": "webhook-file-uploaded",
+      "name": "Webhook - Archivo Subido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "webhook-file-uploaded"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Procesar datos del webhook recibido desde nuestro sistema\nconst webhookData = $input.first().json;\n\n// Extraer información del archivo desde el body del webhook\nconst fileData = webhookData.body || webhookData;\nconst fileId = fileData.fileId;\nconst filename = fileData.filename;\nconst filepath = fileData.filepath;\nconst mimetype = fileData.mimetype;\nconst size = fileData.size;\n\nconsole.log(`📄 Procesando archivo: ${filename}`);\nconsole.log(`🆔 ID: ${fileId}`);\nconsole.log(`📋 Tipo: ${mimetype}`);\nconsole.log(`📏 Tamaño: ${size} bytes`);\n\n// Determinar tipo de procesamiento según el tipo de archivo\nlet processingType = 'unknown';\nlet extractedData = {};\n\n// Verificar si es un CSV de evaluación de ciberseguridad\nif (mimetype === 'text/csv' || (filename && filename.toLowerCase().endsWith('.csv'))) {\n    processingType = 'cybersecurity_evaluation';\n    \n    console.log(`🔐 Detectado CSV de evaluación de ciberseguridad`);\n    \n    // Para CSV de ciberseguridad, enviar directamente al backend para análisis\n    extractedData = {\n        type: 'Cybersecurity Evaluation CSV',\n        description: 'Archivo CSV con respuestas de evaluación de madurez en ciberseguridad',\n        processing_note: 'El análisis detallado se realiza en el backend con SecurityEvaluationAnalyzer',\n        expected_format: '38 preguntas de evaluación + EMAIL + EMPRESA',\n        dimensions: ['GOBIERNO', 'IDENTIFICAR', 'PROTEGER', 'DETECTAR', 'RESPONDER', 'RECUPERAR', 'IMPROVE'],\n        metadata: {\n            created: new Date().toISOString(),\n            analyzer: 'SecurityEvaluationAnalyzer',\n            version: '2.0.0'\n        }\n    };\n    \n} else if (mimetype === 'application/pdf') {\n    processingType = 'pdf';\n    // Simulación de extracción de datos PDF\n    extractedData = {\n        type: 'PDF Document',\n        pages: Math.floor(Math.random() * 20) + 1,\n        text_preview: 'Contenido del documento PDF extraído...',\n        metadata: {\n            created: new Date().toISOString(),\n            author: 'Sistema Automático',\n            keywords: ['documento', 'pdf', 'procesado']\n        }\n    };\n} else if (mimetype.includes('word') || mimetype.includes('officedocument.wordprocessingml')) {\n    processingType = 'word';\n    // Simulación de extracción de datos Word\n    extractedData = {\n        type: 'Word Document',\n        word_count: Math.floor(Math.random() * 5000) + 100,\n        text_preview: 'Contenido del documento Word extraído...',\n        metadata: {\n            created: new Date().toISOString(),\n            author: 'Sistema Automático',\n            sections: Math.floor(Math.random() * 10) + 1\n        }\n    };\n} else if (mimetype.includes('excel') || mimetype.includes('spreadsheetml')) {\n    processingType = 'excel';\n    // Simulación de extracción de datos Excel\n    extractedData = {\n        type: 'Excel Spreadsheet',\n        sheets: Math.floor(Math.random() * 5) + 1,\n        rows: Math.floor(Math.random() * 1000) + 10,\n        columns: Math.floor(Math.random() * 20) + 5,\n        data_preview: [\n            ['Columna 1', 'Columna 2', 'Columna 3'],\n            ['Dato 1', 'Dato 2', 'Dato 3'],\n            ['Valor A', 'Valor B', 'Valor C']\n        ],\n        metadata: {\n            created: new Date().toISOString(),\n            has_formulas: Math.random() > 0.5\n        }\n    };\n}\n\n// Preparar resultado completo\nconst result = {\n    processing_type: processingType,\n    original_file: {\n        id: fileId,\n        name: filename,\n        path: filepath,\n        size: size,\n        type: mimetype\n    },\n    extracted_data: extractedData,\n    processing_info: {\n        processed_at: new Date().toISOString(),\n        processing_time: Math.floor(Math.random() * 2000) + 300, // ms\n        status: 'success',\n        version: '2.0.0',\n        specialized_analyzer: processingType === 'cybersecurity_evaluation' ? 'SecurityEvaluationAnalyzer' : 'Generic'\n    },\n    summary: {\n        confidence: processingType === 'cybersecurity_evaluation' ? 95 : Math.floor(Math.random() * 30) + 70,\n        data_quality: processingType === 'cybersecurity_evaluation' ? 'high' : 'medium',\n        notes: processingType === 'cybersecurity_evaluation' ? \n            'CSV de evaluación de ciberseguridad detectado - Análisis especializado activado' :\n            `Archivo ${processingType.toUpperCase()} procesado exitosamente`\n    }\n};\n\nconsole.log(`✅ Procesamiento ${processingType} completado`);\n\n// Retornar datos para el siguiente nodo\nreturn {\n    fileId: fileId,\n    status: 'COMPLETED',\n    result: result\n};"
+      },
+      "id": "js-process-file",
+      "name": "JS - Procesar Archivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT", 
+        "url": "=https://cybersecurity-evaluation-system.onrender.com/api/files/{{$json.fileId}}/result",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "={{$json.status}}"
+            },
+            {
+              "name": "result",
+              "value": "={{$json.result}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-update-status",
+      "name": "HTTP - Actualizar Estado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log final del procesamiento\nconst responseData = $input.first().json;\n\nconsole.log('🎉 Workflow completado exitosamente');\nconsole.log('📤 Respuesta del servidor:', JSON.stringify(responseData, null, 2));\n\nif (responseData.success) {\n    console.log('✅ Estado actualizado correctamente en la base de datos');\n} else {\n    console.log('❌ Error actualizando estado:', responseData.message);\n}\n\nreturn {\n    workflow_status: 'completed',\n    timestamp: new Date().toISOString(),\n    server_response: responseData\n};"
+      },
+      "id": "js-log-completion",
+      "name": "JS - Log Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Archivo Subido": {
+      "main": [
+        [
+          {
+            "node": "JS - Procesar Archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS - Procesar Archivo": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Actualizar Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Actualizar Estado": {
+      "main": [
+        [
+          {
+            "node": "JS - Log Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-10-03T22:00:00.000Z",
+  "id": "sistema-gestion-archivos-workflow",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-03T22:00:00.000Z",
+  "versionId": "1"
+}

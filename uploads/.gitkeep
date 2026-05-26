@@ -1,0 +1,9 @@
+# Carpeta de archivos subidos
+
+Esta carpeta almacena todos los archivos subidos por los usuarios.
+
+- Los archivos se guardan con nombres únicos para evitar conflictos
+- Tipos permitidos: PDF, Word (.doc, .docx), Excel (.xls, .xlsx)
+- Tamaño máximo: 10MB por archivo
+
+**Nota**: Esta carpeta debe tener permisos de escritura para el servidor Node.js

@@ -1,0 +1,138 @@
+// ========================================
+// ESQUEMA DE BASE DE DATOS - SISTEMA DE GESTIÓN DE ARCHIVOS
+// Tesis Universitaria - PostgreSQL con Prisma ORM
+// Compatible con Supabase y deploy en Vercel
+// ========================================
+
+// Configuración del generador del cliente Prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Configuración de la fuente de datos (PostgreSQL / Supabase)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// MODELO: USERS (Usuarios del sistema)
+// Gestiona autenticación y autorización con JWT
+// ========================================
+model User {
+  id        String   @id @default(uuid())
+  
+  // Datos de autenticación
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)  // Hash bcrypt
+  
+  // Datos personales
+  name      String   @db.VarChar(255)
+  
+  // Rol del usuario (ADMIN puede ver todo, USER solo sus archivos)
+  role      UserRole @default(USER)
+  
+  // Control de estado
+  isActive  Boolean  @default(true)
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relaciones
+  files         File[]
+  refreshTokens RefreshToken[]
+  
+  @@map("users")
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// ========================================
+// ENUM: USER ROLE (Roles de usuario)
+// ========================================
+enum UserRole {
+  ADMIN  // Acceso total, puede ver todos los archivos
+  USER   // Acceso limitado, solo ve sus propios archivos
+}
+
+// ========================================
+// MODELO: REFRESH TOKENS (Tokens de refresco JWT)
+// Gestiona tokens de larga duración para renovar access tokens
+// ========================================
+model RefreshToken {
+  id        String   @id @default(uuid())
+  
+  // Token hasheado (no guardar en texto plano)
+  token     String   @unique @db.VarChar(500)
+  
+  // Usuario propietario
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Información del dispositivo/navegador
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  
+  // Control de expiración
+  expiresAt DateTime @map("expires_at")
+  
+  // Revocación (para logout o seguridad)
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("refresh_tokens")
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([isRevoked])
+}
+
+// ========================================
+// MODELO: FILES (Archivos de evaluación)
+// Asociados a usuarios con control de acceso
+// ========================================
+model File {
+  id          String   @id @default(uuid())
+  
+  // Propietario del archivo (requerido)
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Información del archivo
+  filename    String   @db.VarChar(255)
+  filepath    String   @db.VarChar(500)
+  status      Status   @default(PENDING)
+  
+  // Resultados del procesamiento
+  result      String?  @db.Text
+  reportPath  String?  @map("report_path") @db.VarChar(500)
+  
+  // Metadata
+  mimeType    String?  @map("mime_type") @db.VarChar(100)
+  fileSize    BigInt?  @map("file_size")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("files")
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([filename])
+}
+
+// ========================================
+// ENUM: STATUS (Estados de procesamiento)
+// ========================================
+enum Status {
+  PENDING
+  PROCESSING
+  COMPLETED
+  ERROR
+}

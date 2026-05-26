@@ -1,0 +1,605 @@
+{
+  "metadata": {
+    "source": "MMDRVP - Modelo de madurez y controles MITRE-NIST v.1.3",
+    "framework": "NIST CSF 2.0 × MITRE ATT&CK × NIST SP 800-63B × NIST SP 1300",
+    "scope": "Credenciales robadas (Credential Access)",
+    "version": "1.3"
+  },
+  "maturityLevels": [
+    { "level": 1, "name": "Inicial",     "description": "El proceso estándar no existe." },
+    { "level": 2, "name": "Repetible",   "description": "El proceso ad hoc existe y se realiza de manera informal." },
+    { "level": 3, "name": "Definido",    "description": "El proceso formal existe y está documentado. Se pueden proporcionar pruebas para la mayoría de las actividades. Menos del 10% de excepciones." },
+    { "level": 4, "name": "Gestionado", "description": "El proceso está automatizado y se mide periódicamente." },
+    { "level": 5, "name": "Óptimo",     "description": "El proceso está optimizado y mejora de forma continua." }
+  ],
+  "dimensions": {
+    "GOBIERNO": {
+      "functionId": "GV",
+      "maxScore": 15,
+      "questions": [
+        {
+          "subcategoryId": "AU-SC1",
+          "categoryId": "GV.PO",
+          "category": "Políticas, procesos y procedimientos",
+          "subcategoryDescription": "Políticas (incl. autenticación) establecidas, aprobadas y comunicadas",
+          "question": "¿Qué tan establecidas, aprobadas y comunicadas están tus políticas de seguridad y cómo evidencias que el personal las conoce?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "RA-SC2",
+          "categoryId": "GV.RA",
+          "category": "Evaluación del riesgo",
+          "subcategoryDescription": "Evaluación periódica del riesgo (exposición de credenciales, incl. terceros)",
+          "question": "¿Con qué frecuencia y profundidad evalúas el riesgo de exposición de credenciales propias y de terceros/proveedores (p. ej., revisión de posibles filtraciones públicas, detección de reuso de contraseñas, etc.)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "SUP-SC3",
+          "categoryId": "GV.SC",
+          "category": "Riesgos de la cadena de suministro",
+          "subcategoryDescription": "Requisitos de ciberseguridad para terceros definidos en contratos",
+          "question": "¿Qué tan claros y exigidos están en tus contratos/órdenes de servicio los requisitos mínimos de ciberseguridad para terceros (p. ej., uso de MFA para acceso a tus sistemas/datos, manejo de incidentes y notificación en ≤72 h, protección de datos y confidencialidad, etc.)?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "GV.AU-SC1",
+          "description": "Adoptar por norma autenticadores resistentes a suplantación de verificador (FIDO2/WebAuthn, client-auth TLS) para accesos con datos personales o críticos. Define fases de retiro de métodos RESTRICTED (SMS/voz) y push sin number-matching.",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Phishing / Ingeniería Social", "Robo de tokens"]
+        },
+        {
+          "id": "GV.RA-SC2",
+          "description": "Evaluación periódica del riesgo por credenciales (incluye terceros y no-humanas).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "GV.SUP-SC3",
+          "description": "Cláusulas anti-credenciales en contratos de proveedores (exigir MFA resistente, rotación de secretos, evidencias).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        }
+      ]
+    },
+    "IDENTIFICAR": {
+      "functionId": "ID",
+      "maxScore": 5,
+      "questions": [
+        {
+          "subcategoryId": "ID.AM-02",
+          "categoryId": "ID.AM",
+          "category": "Gestión de Activos",
+          "subcategoryDescription": "Inventarios de software, servicios y sistemas son mantenidos",
+          "question": "¿Cómo mantienes un inventario actualizado de software, servicios (incluido SaaS) y sistemas/equipos, indicando dueño/responsable, propósito, versión/estado, criticidad y fecha de última revisión?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "ID.AM-02",
+          "description": "Se mantienen inventarios de software, servicios y sistemas gestionados por la organización.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credential dumping"]
+        }
+      ]
+    },
+    "PROTEGER": {
+      "functionId": "PR",
+      "maxScore": 110,
+      "questions": [
+        {
+          "subcategoryId": "PR.AA-01",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Identidades y credenciales de usuarios, servicios y equipos autorizados son gestionadas",
+          "question": "¿Cómo gestionas las identidades y credenciales durante todo su ciclo de vida (altas/cambios/bajas), verificas a la persona antes de emitir credenciales y mantienes registros/revisiones periódicas para evitar cuentas innecesarias o compartidas?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.AA-02",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Las identidades están comprobadas y vinculadas a credenciales según el contexto",
+          "question": "¿Cómo compruebas la identidad antes de entregar credenciales y cómo registras el vínculo persona-cuenta-contacto, ajustando el nivel de verificación al contexto (p. ej., acceso remoto, funciones sensibles, cambios de rol)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.AA-03",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Usuarios, servicios y hardware están autenticados",
+          "question": "¿Cómo autenticas a las personas usuarias, a las cuentas de servicio y a los equipos/dispositivos que se conectan (p. ej., uso de MFA para personas, claves/credenciales únicas para servicios con rotación, y verificación de dispositivos conocidos o gestionados)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.AA-05",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Permisos de acceso y autorizaciones con mínimo privilegio y separación de funciones",
+          "question": "¿Cómo defines, aplicas y revisas los permisos de acceso para asegurar mínimo privilegio y separación de funciones (SoD)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "DE.CM-01",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Redes y servicios de red monitoreados (eventos de autenticación)",
+          "question": "¿Tienes claramente definido y aplicado qué eventos vigilar (p. ej., intentos fallidos repetidos, cambios/recuperos de contraseña, creación de cuentas, inicios desde ubicaciones u horarios inusuales) y en qué sistemas, con frecuencia de revisión y responsables?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "DE.CM-03",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Actividad del personal y uso de tecnología monitoreados",
+          "question": "¿Cómo monitoreas la actividad del personal y el uso de tecnología (p. ej., inicios de sesión, accesos inusuales, uso de correo/web, acciones privilegiadas, instalación de software) con alertas y responsables definidos, respetando la política de privacidad?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "DE.CM-09",
+          "categoryId": "PR.AA",
+          "category": "Gestión de Identidad, Autenticación y Acceso",
+          "subcategoryDescription": "Hardware, software informáticos y datos monitoreados",
+          "question": "¿Cómo monitoreas tus computadoras y servidores (instalación/actualización de software, uso de dispositivos externos), y el acceso/traslado de datos (copias inusuales, subidas a la nube), con alertas y responsables definidos?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.IR-01",
+          "categoryId": "PR.IR",
+          "category": "Resiliencia de Infraestructura Tecnológica",
+          "subcategoryDescription": "Redes y entornos protegidos contra acceso no autorizado",
+          "question": "¿Cómo proteges tu red y entornos (oficina, nube) contra accesos no autorizados?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.DS-01",
+          "categoryId": "PR.DS",
+          "category": "Seguridad de Datos",
+          "subcategoryDescription": "Confidencialidad, integridad y disponibilidad de datos en reposo protegidas",
+          "question": "¿Cómo proteges los datos en reposo (en computadoras, servidores y nube)? (Por ejemplo, cifrado nativo del equipo/proveedor, permisos mínimos, copias de seguridad, etc.)",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.DS-02",
+          "categoryId": "PR.DS",
+          "category": "Seguridad de Datos",
+          "subcategoryDescription": "Confidencialidad, integridad y disponibilidad de datos en tránsito protegidas",
+          "question": "¿Cómo aseguras que toda la información que viaja entre personas, equipos y servicios use canales cifrados y confiables (p. ej., HTTPS/TLS vigente, certificados al día, bloqueo de protocolos inseguros)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.DS-11",
+          "categoryId": "PR.DS",
+          "category": "Seguridad de Datos",
+          "subcategoryDescription": "Copias de seguridad creadas, protegidas, mantenidas y probadas",
+          "question": "¿Cómo realizas, proteges y pruebas las copias de seguridad de tus datos y sistemas críticos (creación programada, almacenamiento en lugar/cuenta separados, acceso limitado y pruebas de restauración periódicas)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.PS-01",
+          "categoryId": "PR.PS",
+          "category": "Seguridad de Plataforma",
+          "subcategoryDescription": "Prácticas de gestión de la configuración establecidas y aplicadas",
+          "question": "¿Cómo defines y aplicas configuraciones base de tus equipos/servidores/aplicaciones (listados de ajustes permitidos, parches mínimos, servicios deshabilitados), registras cambios y verificas desvíos con revisiones periódicas?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.PS-02",
+          "categoryId": "PR.PS",
+          "category": "Seguridad de Plataforma",
+          "subcategoryDescription": "Software mantenido, reemplazado o eliminado según el riesgo",
+          "question": "¿Cómo mantienes, reemplazas o retiras el software según su riesgo (actualizaciones y parches con plazos, retiro de versiones sin soporte/EOL, y desinstalación de lo que no se usa), dejando registro y responsables?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.PS-04",
+          "categoryId": "PR.PS",
+          "category": "Seguridad de Plataforma",
+          "subcategoryDescription": "Registros de log generados y disponibles para monitoreo continuo",
+          "question": "¿Cómo generas y centralizas los registros (inicio de sesión, sistemas clave, red, nube/SaaS) para que estén disponibles en el monitoreo continuo, con retención mínima y relojes sincronizados?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.PS-05",
+          "categoryId": "PR.PS",
+          "category": "Seguridad de Plataforma",
+          "subcategoryDescription": "Instalación y ejecución de software no autorizado prevenidas",
+          "question": "¿Cómo evitas que se instale o ejecute software no autorizado en tus equipos/servidores?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PR.PS-06",
+          "categoryId": "PR.PS",
+          "category": "Seguridad de Plataforma",
+          "subcategoryDescription": "Prácticas seguras de desarrollo de software integradas",
+          "question": "¿Cómo integras prácticas de desarrollo seguro en tu ciclo de vida de software (uso de repositorio de código, revisión por pares, manejo de dependencias, pruebas básicas, protección de secretos y despliegues controlados)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "AA-SC4",
+          "categoryId": "PR.AA",
+          "category": "Gestión de identidades, autenticación y control de acceso",
+          "subcategoryDescription": "Usuarios, servicios y hardware autenticados con MFA resistente a phishing",
+          "question": "¿Qué cobertura real tienes de autenticación multifactor resistente a phishing para personas usuarias, cuentas de servicio y equipos/dispositivos (p. ej., app autenticadora o llave de seguridad), y qué tan por defecto está habilitada?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "DS-SC6",
+          "categoryId": "PR.DS",
+          "category": "Seguridad de datos",
+          "subcategoryDescription": "Datos sensibles/credenciales protegidos en reposo con hashing robusto",
+          "question": "¿Cómo proteges en reposo las credenciales y otros datos sensibles (p. ej., contraseñas con hash robusto y sal única; llaves/API tokens guardados en lugar seguro con acceso limitado; copias/respaldo protegidas)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "PS-SC10",
+          "categoryId": "PR.AA",
+          "category": "Gestión de identidades, autenticación y control de acceso",
+          "subcategoryDescription": "Políticas de contraseñas aplicadas con bloqueo de débiles/expuestas",
+          "question": "¿Cómo aplicas políticas de contraseñas que bloqueen contraseñas débiles o expuestas/filtradas (longitud mínima, listas de no permitidas, verificación en alta/cambio, bloqueo de reuso y registro de intentos)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "AT-SC7",
+          "categoryId": "PR.AT",
+          "category": "Conciencia y capacitación",
+          "subcategoryDescription": "Personal capacitado contra MFA-fatigue y consent-phishing",
+          "question": "¿Cómo capacitas y ejercitas al personal para reconocer y actuar ante MFA-fatigue (bombardeo de solicitudes) y consent-phishing (autorización/OAuth maliciosa)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "AC-SC8",
+          "categoryId": "PR.AA",
+          "category": "Gestión de identidades, autenticación y control de acceso",
+          "subcategoryDescription": "Permisos con mínimo privilegio y separación de funciones usando acceso JIT/TAP",
+          "question": "¿Cómo aseguras mínimo privilegio y separación de funciones usando accesos temporales y con aprobación (JIT/TAP) para tareas elevadas (p. ej., dar admin sólo por tiempo limitado, con solicitud/aprobación, registro y retiro automático)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "AC-SC9",
+          "categoryId": "PR.AA",
+          "category": "Gestión de identidades, autenticación y control de acceso",
+          "subcategoryDescription": "Gestión de identidades no humanas/cuentas de servicio sin login interactivo",
+          "question": "¿Cómo gestionas las cuentas de servicio/bots (no humanas) para que no permitan inicio de sesión interactivo, tengan credenciales únicas y rotadas, permisos mínimos, dueño responsable y registro de uso?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "PR.AA-01",
+          "description": "La organización gestiona las identidades y credenciales de los usuarios, servicios y equipos autorizados.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Abuso de servicios remotos expuestos"]
+        },
+        {
+          "id": "PR.AA-02",
+          "description": "Las identidades están comprobadas y vinculadas a credenciales basadas en el contexto de las interacciones.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Brute Force"]
+        },
+        {
+          "id": "PR.AA-03",
+          "description": "Los usuarios, servicios y hardware están autenticados.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credential dumping"]
+        },
+        {
+          "id": "PR.AA-05",
+          "description": "Los permisos de acceso, derechos y autorizaciones se definen en una política, se gestionan, aplican y revisan, e incorporan los principios de mínimo privilegio y separación de funciones.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Exposición de credenciales en repositorios"]
+        },
+        {
+          "id": "PR.DS-01",
+          "description": "La confidencialidad, la integridad y la disponibilidad de los datos en reposo están protegidas.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Robo de tokens"]
+        },
+        {
+          "id": "PR.DS-02",
+          "description": "La confidencialidad, la integridad y la disponibilidad de los datos en tránsito están protegidas.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Brute Force"]
+        },
+        {
+          "id": "PR.DS-11",
+          "description": "Se crean, protegen, mantienen y comprueban copias de seguridad de los datos.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Phishing / Ingeniería Social"]
+        },
+        {
+          "id": "PR.IR-01",
+          "description": "Las redes y los entornos están protegidos contra el acceso lógico y el uso no autorizados.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Brute Force"]
+        },
+        {
+          "id": "PR.PS-01",
+          "description": "Se establecen y aplican prácticas de gestión de la configuración.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credenciales almacenadas en navegadores"]
+        },
+        {
+          "id": "PR.PS-02",
+          "description": "Se mantiene, sustituye y elimina el software en función del riesgo.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Robo de tokens"]
+        },
+        {
+          "id": "PR.PS-04",
+          "description": "Se generan registros y se ponen a disposición para una supervisión continua.",
+          "framework": "CSF 2.0",
+          "attackVectors": []
+        },
+        {
+          "id": "PR.PS-05",
+          "description": "Se impide la instalación y la ejecución de software no autorizado.",
+          "framework": "CSF 2.0",
+          "attackVectors": []
+        },
+        {
+          "id": "PR.PS-06",
+          "description": "Se integran prácticas seguras de desarrollo de software y se supervisa su rendimiento durante todo el ciclo de vida.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Abuso de servicios remotos expuestos"]
+        },
+        {
+          "id": "PR.AA-SC4",
+          "description": "Habilitar MFA por defecto con llaves criptográficas ligadas a dispositivo (hardware o plataforma) y demostración de intención (toque/botón) en cada autenticación y re-autenticación.",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Brute Force"]
+        },
+        {
+          "id": "PR.DS-SC6",
+          "description": "Almacenamiento de secretos verificador-resistente: Hash de contraseñas con función memory-hard (Argon2id/Balloon) + sal pública ≥32 bits y sal secreta en HSM; prohibido truncar, permitir 64+ caracteres y paste.",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Credential dumping"]
+        },
+        {
+          "id": "PR.PS-SC10",
+          "description": "Bloqueo de contraseñas expuestas/débiles (blacklists).",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Brute Force"]
+        },
+        {
+          "id": "PR.AT-SC7",
+          "description": "Entrenamiento anti-MFA fatigue y consent phishing: Simulaciones de push bombing, aprobación fuera de banda con number-matching y educación sobre prompts falsos.",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "PR.AC-SC8",
+          "description": "JIT y TAP para accesos privilegiados: Just-in-Time y Time-Bound Access para admins; no permitir uso de contraseñas para privilegios elevados (solo credenciales criptográficas + aprobación).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "PR.AC-SC9",
+          "description": "Cuentas de servicio sin interacción: Prohibir login interactivo; rotación automática vía vault y SCIM/Secrets Manager; atestación de uso por mTLS.",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        }
+      ]
+    },
+    "DETECTAR": {
+      "functionId": "DE",
+      "maxScore": 25,
+      "questions": [
+        {
+          "subcategoryId": "DE.AE-02",
+          "categoryId": "DE.AE",
+          "category": "Análisis de Eventos Adversos",
+          "subcategoryDescription": "Los eventos potencialmente adversos se analizan para comprender mejor las actividades asociadas",
+          "question": "¿Cómo analizas eventos de inicio de sesión para detectar y entender intentos con credenciales robadas?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "CM-SC13",
+          "categoryId": "DE.CM",
+          "category": "Monitoreo continuo",
+          "subcategoryDescription": "Actividad del personal/tecnología monitoreada (replay e impersonation en canal/sesión)",
+          "question": "¿Cómo monitoreas y reaccionas ante señales de replay o suplantación en sesiones/canales (p. ej., inicios casi simultáneos desde lugares distintos, uso de dispositivos no habituales, sesiones abiertas por mucho tiempo, etc.)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "CM-SC14",
+          "categoryId": "DE.CM",
+          "category": "Monitoreo continuo",
+          "subcategoryDescription": "Actividad monitoreada con honeycreds/canaries para detección proactiva",
+          "question": "¿Cómo usas credenciales o archivos señuelo (honeycreds/canaries) para detectar acceso indebido de forma proactiva y registrar/actuar ante esas señales?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "CM-SC15",
+          "categoryId": "DE.CM",
+          "category": "Monitoreo continuo",
+          "subcategoryDescription": "Actividad monitoreada para detección de MFA prompt bombing",
+          "question": "¿Cómo detectas y respondes a intentos de MFA prompt bombing (múltiples solicitudes de aprobación en poco tiempo, rechazos repetidos, aprobación desde lugar/dispositivo inusual) con alertas y acciones iniciales?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "CM-SC16",
+          "categoryId": "DE.CM",
+          "category": "Monitoreo continuo",
+          "subcategoryDescription": "Actividades/servicios externos monitoreados en dark/clear-web dumps",
+          "question": "¿Cómo vigilas fuentes externas (web pública/foros/listas de filtraciones) para detectar credenciales o datos tuyos expuestos y qué acciones aplicas (aviso, cambio forzado de clave, reforzar MFA, revisar accesos recientes)?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "DE.AE-02",
+          "description": "Los acontecimientos potencialmente adversos se analizan para comprender mejor las actividades asociadas.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credential dumping"]
+        },
+        {
+          "id": "DE.CM-01",
+          "description": "Las redes y los servicios de red se monitorean para detectar acontecimientos potencialmente adversos.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credential dumping"]
+        },
+        {
+          "id": "DE.CM-03",
+          "description": "Se monitorea la actividad del personal y el uso de la tecnología para detectar posibles acontecimientos adversos.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Abuso de servicios remotos expuestos"]
+        },
+        {
+          "id": "DE.CM-09",
+          "description": "Se monitorean el hardware y el software informáticos, los entornos de ejecución y sus datos para detectar posibles acontecimientos adversos.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credential dumping"]
+        },
+        {
+          "id": "DE.CM-SC13",
+          "description": "Telemetría de autenticación ligada a canal/sesión (replay y verifier-impersonation).",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Robo de tokens"]
+        },
+        {
+          "id": "DE.CM-SC14",
+          "description": "Honeycreds / canary tokens para detección proactiva.",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "DE.CM-SC15",
+          "description": "Umbrales por usuario (N rechazos en X min), origen inusual del push, y alertas al SOC + bloqueo temporal de prompts.",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "DE.CM-SC16",
+          "description": "Monitoreo dark/clear-web de dominios/credenciales (threat intel).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        }
+      ]
+    },
+    "RESPONDER": {
+      "functionId": "RS",
+      "maxScore": 20,
+      "questions": [
+        {
+          "subcategoryId": "RS.AN-07",
+          "categoryId": "RS.AN",
+          "category": "Análisis de Incidentes",
+          "subcategoryDescription": "Datos y metadatos del incidente recopilados con integridad y procedencia preservadas",
+          "question": "¿Cómo recoges y guardas la evidencia de incidentes (datos y metadatos) asegurando su integridad y origen (incluyendo quién/cuándo/dónde/qué, conservación del original, etc.)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "MI-SC18",
+          "categoryId": "RS.MI",
+          "category": "Mitigación",
+          "subcategoryDescription": "Incidentes contenidos mediante revocación y re-binding seguro de autenticadores",
+          "question": "Cuando sospechas o confirmas credenciales comprometidas, ¿cómo revocas accesos/sesiones y vuelves a vincular (re-binding) los autenticadores de forma segura (p. ej., cerrar sesiones/tokens, deshabilitar temporalmente la cuenta, exigir cambio de clave, re-inscribir MFA verificando identidad, dejar registro y plazos de cierre)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "MI-SC17",
+          "categoryId": "RS.MI",
+          "category": "Mitigación",
+          "subcategoryDescription": "Incidentes contenidos con playbooks SOAR por técnica de credencial",
+          "question": "Cuando el incidente involucra credenciales, ¿tienes guías de respuesta por técnica con pasos claros (revocar sesiones, deshabilitar cuenta, cambio de clave, reinscribir MFA verificando identidad, notificar y documentar) y, cuando es posible, acciones iniciales automatizadas?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "CO-SC19",
+          "categoryId": "RS.CO",
+          "category": "Comunicaciones",
+          "subcategoryDescription": "Notificación a partes interesadas y autoservicio seguro disponible",
+          "question": "Cuando hay incidentes o riesgos con credenciales, ¿cómo notificas a las partes interesadas (personal afectado, responsables internos, terceros si aplica) y cómo ofreces autoservicio seguro (p. ej., cambio/recupero de clave, revisión de sesiones) con verificación de identidad y registro?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "RS.AN-07",
+          "description": "Se recopilan los datos y metadatos del incidente y se preservan su integridad y su procedencia.",
+          "framework": "CSF 2.0",
+          "attackVectors": ["Credenciales almacenadas en navegadores"]
+        },
+        {
+          "id": "RS.MI-SC18",
+          "description": "Revocación y re-binding seguro de autenticadores (ciclo de vida).",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Abuso de servicios remotos expuestos"]
+        },
+        {
+          "id": "RS.MI-SC17",
+          "description": "Playbooks SOAR por técnica (spraying, dumping, password stores).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "RS.CO-SC19",
+          "description": "Notificación dirigida al usuario + autoservicio seguro.",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        }
+      ]
+    },
+    "RECUPERAR": {
+      "functionId": "RC",
+      "maxScore": 5,
+      "questions": [
+        {
+          "subcategoryId": "RP-SC20",
+          "categoryId": "RC.RP",
+          "category": "Planificación de la recuperación",
+          "subcategoryDescription": "Planes de recuperación ejecutados con reinscripción MFA con garantías ≥ AAL original",
+          "question": "Cuando hay credenciales comprometidas o sospecha, ¿cómo ejecutas tu plan de recuperación para revocar sesiones, verificar la identidad y reinscribir el MFA con un nivel de garantía igual o mayor (p. ej., pasar de SMS a app/llave), dejando evidencias y plazos de cierre?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "RC.RP-SC20",
+          "description": "Reinscripción MFA con garantías ≥ AAL original.",
+          "framework": "NIST SP 800-63B",
+          "attackVectors": ["Phishing / Ingeniería Social"]
+        }
+      ]
+    },
+    "IMPROVE": {
+      "functionId": "IM",
+      "maxScore": 10,
+      "questions": [
+        {
+          "subcategoryId": "PR-SC21",
+          "categoryId": "GV.OV",
+          "category": "Supervisión y desempeño",
+          "subcategoryDescription": "Desempeño medido y reportado con KPIs de eficacia",
+          "question": "¿Cómo mides y reportas la eficacia de tus controles contra credenciales robadas (p. ej., adopción de MFA, tiempo de baja de cuentas, % de contraseñas bloqueadas por débiles/expuestas, tiempo de detección/atención, casos contenidos)?",
+          "maxScore": 5
+        },
+        {
+          "subcategoryId": "TS-SC22",
+          "categoryId": "GV.IM",
+          "category": "Mejora continua",
+          "subcategoryDescription": "Lecciones aprendidas convertidas en hardening técnico periódico",
+          "question": "¿Cómo conviertes las lecciones aprendidas en acciones periódicas de endurecimiento (p. ej., actualizar configuraciones base, quitar servicios/protocolos innecesarios, reforzar MFA, etc.) con responsables, plazos y verificación?",
+          "maxScore": 5
+        }
+      ],
+      "controls": [
+        {
+          "id": "IM.PR-SC21",
+          "description": "KPIs de eficacia (p. ej., % de logins FIDO, MTR de revocación).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        },
+        {
+          "id": "IM.TS-SC22",
+          "description": "Hardening continuo (lifetimes OAuth, detección reuse de refresh, pruebas pTH/pTC).",
+          "framework": "NIST SP 1300",
+          "attackVectors": []
+        }
+      ]
+    }
+  }
+}
