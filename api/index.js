@@ -5,5 +5,8 @@
 
 const app = require('../backend/server');
 
-// Vercel automáticamente envuelve esto en una serverless function
-module.exports = app;
+// Handler para Vercel Serverless
+module.exports = (req, res) => {
+  // Pasar la request y response a Express
+  return app(req, res);
+};

@@ -152,5 +152,3 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
 
 // Exportar app para Vercel
 module.exports = app;
-
-module.exports = app;
