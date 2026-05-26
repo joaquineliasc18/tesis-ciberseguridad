@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "frontend",
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*\\.(js|css|html|png|jpg|jpeg|gif|svg|ico|webp))",
+      "dest": "/frontend/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_REFRESH_SECRET": "@jwt_refresh_secret",
+    "OPENAI_API_KEY": "@openai_api_key"
+  }
+}
