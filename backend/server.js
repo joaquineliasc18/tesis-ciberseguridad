@@ -120,32 +120,37 @@ app.use('*', (req, res) => {
   });
 });
 
-// Inicializar servidor
-const server = app.listen(PORT, () => {
-  console.log('🚀 ===============================================');
-  console.log('� Automated Document Processor');
-  console.log('🚀 ===============================================');
-  console.log(`🌐 Servidor ejecutándose en: http://localhost:${PORT}`);
-  console.log(`📊 API disponible en: http://localhost:${PORT}/api/files`);
-  console.log(`💻 Frontend disponible en: http://localhost:${PORT}`);
-  console.log('🚀 ===============================================');
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 Cerrando servidor...');
-  server.close(() => {
-    console.log('✅ Servidor cerrado exitosamente');
-    process.exit(0);
+// Inicializar servidor (solo en desarrollo, no en Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log('🚀 ===============================================');
+    console.log('� Automated Document Processor');
+    console.log('🚀 ===============================================');
+    console.log(`🌐 Servidor ejecutándose en: http://localhost:${PORT}`);
+    console.log(`📊 API disponible en: http://localhost:${PORT}/api/files`);
+    console.log(`💻 Frontend disponible en: http://localhost:${PORT}`);
+    console.log('🚀 ===============================================');
   });
-});
 
-process.on('SIGINT', () => {
-  console.log('🛑 Cerrando servidor...');
-  server.close(() => {
-    console.log('✅ Servidor cerrado exitosamente');
-    process.exit(0);
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 Cerrando servidor...');
+    server.close(() => {
+      console.log('✅ Servidor cerrado exitosamente');
+      process.exit(0);
+    });
   });
-});
+
+  process.on('SIGINT', () => {
+    console.log('🛑 Cerrando servidor...');
+    server.close(() => {
+      console.log('✅ Servidor cerrado exitosamente');
+      process.exit(0);
+    });
+  });
+}
+
+// Exportar app para Vercel
+module.exports = app;
 
 module.exports = app;
