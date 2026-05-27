@@ -84,6 +84,14 @@ app.get('/health', (req, res) => {
     message: 'Servidor funcionando correctamente',
     timestamp: new Date().toISOString(),
     version: '2.0.0',
+    environment: {
+      NODE_ENV: process.env.NODE_ENV || 'development',
+      DATABASE_URL: process.env.DATABASE_URL ? '✅ Configurado' : '❌ NO configurado',
+      JWT_SECRET: process.env.JWT_SECRET ? '✅ Configurado' : '❌ NO configurado',
+      JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET ? '✅ Configurado' : '❌ NO configurado',
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '✅ Configurado' : '❌ NO configurado',
+      N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL ? '✅ Configurado' : '❌ NO configurado',
+    },
     features: {
       authentication: true,
       chatgpt: process.env.USE_CHATGPT_RECOMMENDATIONS === 'true',

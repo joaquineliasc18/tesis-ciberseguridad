@@ -16,6 +16,7 @@ async function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No se proporcionó token de autenticación');
       return res.status(401).json({
         success: false,
         message: 'No se proporcionó token de autenticación'
@@ -25,9 +26,19 @@ async function requireAuth(req, res, next) {
     const token = authHeader.substring(7); // Remover "Bearer "
 
     // Verificar token
-    const decoded = tokenService.verifyAccessToken(token);
+    let decoded;
+    try {
+      decoded = tokenService.verifyAccessToken(token);
+    } catch (verifyError) {
+      console.error('❌ Error verificando token:', verifyError.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido o expirado'
+      });
+    }
 
     if (!decoded) {
+      console.log('❌ Token no pudo ser decodificado');
       return res.status(401).json({
         success: false,
         message: 'Token inválido o expirado'
@@ -35,9 +46,19 @@ async function requireAuth(req, res, next) {
     }
 
     // Obtener usuario completo de la base de datos
-    const user = await userService.getUserById(decoded.userId);
+    let user;
+    try {
+      user = await userService.getUserById(decoded.userId);
+    } catch (dbError) {
+      console.error('❌ Error consultando usuario:', dbError.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al consultar usuario'
+      });
+    }
 
     if (!user) {
+      console.log('❌ Usuario no encontrado:', decoded.userId);
       return res.status(401).json({
         success: false,
         message: 'Usuario no encontrado'
@@ -45,6 +66,7 @@ async function requireAuth(req, res, next) {
     }
 
     if (!user.isActive) {
+      console.log('❌ Usuario desactivado:', user.email);
       return res.status(403).json({
         success: false,
         message: 'Usuario desactivado'
@@ -57,10 +79,12 @@ async function requireAuth(req, res, next) {
     next();
 
   } catch (error) {
-    console.error('❌ Error en middleware requireAuth:', error.message);
+    console.error('❌ Error INESPERADO en middleware requireAuth:', error);
+    console.error('Stack trace:', error.stack);
     return res.status(500).json({
       success: false,
-      message: 'Error al verificar autenticación'
+      message: 'Error al verificar autenticación',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }

@@ -8,9 +8,15 @@ const crypto = require('crypto');
 const prisma = require('../prisma/client');
 
 // Configuración desde variables de entorno
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ACCESS_EXPIRATION = process.env.JWT_ACCESS_EXPIRATION || '15m';
 const JWT_REFRESH_EXPIRATION = process.env.JWT_REFRESH_EXPIRATION || '7d';
+
+// Validar que JWT_SECRET esté configurado
+if (!JWT_SECRET) {
+  console.error('🚨 JWT_SECRET no está configurado. La autenticación NO funcionará.');
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 /**
  * Generar Access Token (JWT de corta duración)
