@@ -203,6 +203,8 @@ const getFileById = async (req, res) => {
         id: file.id,
         filename: file.filename,
         status: file.status,
+        fileSize: file.fileSize ? Number(file.fileSize) : null, // Convertir BigInt a Number
+        mimeType: file.mimeType,
         result: file.result ? JSON.parse(file.result) : null,
         createdAt: file.createdAt,
         updatedAt: file.updatedAt
@@ -310,6 +312,8 @@ const getAllFiles = async (req, res) => {
           filename: file.filename,
           status: file.status,
           hasResult: !!file.result,
+          fileSize: file.fileSize ? Number(file.fileSize) : null, // Convertir BigInt a Number
+          mimeType: file.mimeType,
           evaluationSummary: evaluationSummary,
           owner: file.user ? {
             id: file.user.id,
