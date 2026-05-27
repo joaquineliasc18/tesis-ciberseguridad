@@ -33,7 +33,7 @@
     {
       "parameters": {
         "method": "PUT", 
-        "url": "=https://cybersecurity-evaluation-system.onrender.com/api/files/{{$json.fileId}}/result",
+        "url": "=https://ciberseguridad-eight.vercel.app/api/files/{{$json.fileId}}/result",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

@@ -392,12 +392,24 @@ const updateFileResult = async (req, res) => {
         console.log(`📊 Detectado archivo CSV - Analizando como evaluación de ciberseguridad`);
         
         try {
-          // Leer el contenido del archivo CSV (filepath ya es una ruta absoluta)
-          const csvContent = fs.readFileSync(fileInfo.filepath, 'utf8');
+          let csvContent = null;
           
-          // Procesar con el analizador de ciberseguridad (ahora asíncrono con ChatGPT)
-          evaluationData = await securityAnalyzer.processSecurityEvaluation(csvContent);
-          console.log(`✅ Evaluación de ciberseguridad procesada con ${evaluationData.dimensionRecommendations ? 'ChatGPT' : 'sistema interno'} - Nivel ${evaluationData.maturityLevel}/5`);
+          // Verificar si el archivo está en memoria (Vercel serverless)
+          if (fileInfo.filepath.startsWith('memory://')) {
+            console.log(`⚠️ Archivo en memoria - n8n debe enviar el contenido procesado`);
+            // Usar el resultado proporcionado por n8n
+            if (typeof result === 'string') {
+              evaluationData = JSON.parse(result);
+            } else if (typeof result === 'object') {
+              evaluationData = result;
+            }
+          } else {
+            // Leer el contenido del archivo CSV del disco (solo en desarrollo local)
+            csvContent = fs.readFileSync(fileInfo.filepath, 'utf8');
+            // Procesar con el analizador de ciberseguridad (ahora asíncrono con ChatGPT)
+            evaluationData = await securityAnalyzer.processSecurityEvaluation(csvContent);
+            console.log(`✅ Evaluación de ciberseguridad procesada con ${evaluationData.dimensionRecommendations ? 'ChatGPT' : 'sistema interno'} - Nivel ${evaluationData.maturityLevel}/5`);
+          }
           
         } catch (analyzeError) {
           console.error(`❌ Error analizando CSV de ciberseguridad:`, analyzeError);
