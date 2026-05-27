@@ -1,26 +1,14 @@
 /**
  * Middleware de subida de archivos usando Multer
- * Configuración para guardar archivos PDF, Word y Excel en la carpeta /uploads
+ * Configuración para almacenamiento en MEMORIA (compatible con Vercel Serverless)
  */
 
 const multer = require('multer');
 const path = require('path');
 
-// Configuración de almacenamiento de archivos
-const storage = multer.diskStorage({
-  // Definir la carpeta de destino
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../../uploads'));
-  },
-  
-  // Generar nombre único para evitar conflictos
-  filename: function (req, file, cb) {
-    const timestamp = Date.now();
-    const randomNum = Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    cb(null, `${timestamp}-${randomNum}${extension}`);
-  }
-});
+// Configuración de almacenamiento EN MEMORIA (para Vercel)
+// Los archivos se guardan como Buffer en req.file.buffer
+const storage = multer.memoryStorage();
 
 // Filtro para validar tipos de archivo permitidos
 const fileFilter = (req, file, cb) => {

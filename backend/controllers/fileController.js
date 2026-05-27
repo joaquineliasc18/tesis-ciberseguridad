@@ -37,11 +37,12 @@ const uploadFile = async (req, res) => {
     const file = req.file;
     
     // Crear registro en la base de datos asociado al usuario
+    // En Vercel, no guardamos filepath físico sino que procesamos desde memoria
     const fileRecord = await prisma.file.create({
       data: {
         id: uuidv4(),
         filename: file.originalname,
-        filepath: file.path,
+        filepath: `memory://${file.originalname}`, // Indicador de archivo en memoria
         status: 'PENDING',
         mimeType: file.mimetype,     // Tipo MIME del archivo
         fileSize: BigInt(file.size), // Tamaño en bytes (usar BigInt para números grandes)
@@ -78,7 +79,65 @@ const uploadFile = async (req, res) => {
       console.log(`ℹ️ Webhook n8n deshabilitado para archivo: ${fileRecord.id}`);
     }
 
-    // Responder exitosamente al cliente
+    // 🔥 PROCESAR CSV INMEDIATAMENTE si es evaluación de ciberseguridad
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      console.log(`📊 Procesando CSV de evaluación de ciberseguridad inmediatamente...`);
+      
+      try {
+        // Leer CSV desde buffer (file.buffer está disponible con memoryStorage)
+        const csvContent = file.buffer.toString('utf8');
+        
+        // Procesar evaluación con ChatGPT
+        const evaluationData = await securityAnalyzer.processSecurityEvaluation(csvContent);
+        console.log(`✅ Evaluación procesada - Nivel ${evaluationData.maturityLevel}/5`);
+        
+        // Generar PDF
+        const pdfController = new PDFController();
+        const pdfResult = await pdfController.generateCyberSecurityPDF(evaluationData, fileRecord.id);
+        
+        // Actualizar registro con resultados y PDF
+        await prisma.file.update({
+          where: { id: fileRecord.id },
+          data: {
+            status: 'COMPLETED',
+            result: JSON.stringify(evaluationData),
+            reportPath: pdfResult.success ? pdfResult.reportPath : null
+          }
+        });
+        
+        console.log(`✅ Archivo ${fileRecord.id} procesado completamente`);
+        
+        // Responder con resultados completos
+        return res.status(201).json({
+          success: true,
+          message: 'Archivo procesado exitosamente',
+          data: {
+            id: fileRecord.id,
+            filename: fileRecord.filename,
+            status: 'COMPLETED',
+            evaluation: evaluationData,
+            reportPath: pdfResult.success ? pdfResult.reportPath : null,
+            createdAt: fileRecord.createdAt
+          }
+        });
+        
+      } catch (processingError) {
+        console.error('❌ Error procesando CSV:', processingError);
+        // Actualizar estado a ERROR
+        await prisma.file.update({
+          where: { id: fileRecord.id },
+          data: { status: 'ERROR' }
+        });
+        
+        return res.status(500).json({
+          success: false,
+          message: 'Error procesando el archivo CSV',
+          error: processingError.message
+        });
+      }
+    }
+
+    // Responder exitosamente al cliente (para archivos no-CSV)
     res.status(201).json({
       success: true,
       message: 'Archivo subido exitosamente',
