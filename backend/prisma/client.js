@@ -1,26 +1,43 @@
 /**
  * Cliente de Prisma para interactuar con la base de datos PostgreSQL
  * Configuración centralizada y reutilizable en toda la aplicación
+ * Optimizado para funciones serverless (Vercel)
  */
 
 const { PrismaClient } = require('@prisma/client');
 
-// Instancia singleton del cliente Prisma
-// Evita múltiples conexiones innecesarias a la base de datos
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'], // Logs para debugging
-});
+// Singleton global para reutilizar conexiones entre invocaciones serverless
+let prisma;
 
-// Manejo graceful del cierre de la aplicación
-// Asegura que las conexiones se cierren correctamente
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  process.exit();
-});
+if (process.env.NODE_ENV === 'production') {
+  // En producción (Vercel serverless), usar instancia global
+  if (!global.prisma) {
+    global.prisma = new PrismaClient({
+      log: ['error', 'warn'], // Solo errores y advertencias en producción
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+    });
+  }
+  prisma = global.prisma;
+} else {
+  // En desarrollo, crear nueva instancia con logs completos
+  prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error'],
+  });
 
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
-  process.exit();
-});
+  // Manejo graceful del cierre solo en desarrollo
+  process.on('SIGINT', async () => {
+    await prisma.$disconnect();
+    process.exit();
+  });
+
+  process.on('SIGTERM', async () => {
+    await prisma.$disconnect();
+    process.exit();
+  });
+}
 
 module.exports = prisma;
