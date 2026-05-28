@@ -18,33 +18,27 @@ class PDFController {
         try {
             console.log(`📄 Generando PDF para evaluación: ${fileId}`);
 
-            // Crear nombre único para el archivo
+            // Generar nombre único para referencia
             const timestamp = Date.now();
             const safeId = fileId.substring(0, 8);
             const fileName = `informe_ciberseguridad_${safeId}_${timestamp}.pdf`;
-            
-            // Ruta completa del archivo
-            const reportsDir = path.join(__dirname, '../../uploads/reports');
-            const fullPath = path.join(reportsDir, fileName);
-            const relativePath = `/uploads/reports/${fileName}`;
 
-            // Asegurar que el directorio existe
-            if (!fs.existsSync(reportsDir)) {
-                fs.mkdirSync(reportsDir, { recursive: true });
-                console.log(`📁 Directorio de reportes creado: ${reportsDir}`);
-            }
+            // Generar PDF en memoria (compatible con Vercel serverless)
+            const result = await this.pdfService.generateSecurityReport(evaluationData, null);
 
-            // Generar el PDF
-            const result = await this.pdfService.generateSecurityReport(evaluationData, fullPath);
-
-            if (result.success) {
-                console.log(`✅ PDF generado exitosamente: ${fileName}`);
+            if (result.success && result.buffer) {
+                // Convertir Buffer a Base64 para almacenamiento en BD
+                const base64Data = result.buffer.toString('base64');
+                
+                console.log(`✅ PDF generado en memoria: ${fileName} (${Math.round(result.fileSize / 1024)}KB)`);
                 return {
                     success: true,
-                    reportPath: relativePath,
+                    buffer: result.buffer,
+                    base64Data: base64Data,
                     reportFilename: fileName,
-                    fullPath: fullPath,
-                    fileSize: result.fileSize
+                    fileSize: result.fileSize,
+                    // Usar prefijo base64:// para indicar que está en BD
+                    reportPath: `base64://${fileName}`
                 };
             } else {
                 console.error(`❌ Error generando PDF: ${result.error}`);

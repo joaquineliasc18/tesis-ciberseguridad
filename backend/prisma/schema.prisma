@@ -111,6 +111,7 @@ model File {
   // Resultados del procesamiento
   result      String?  @db.Text
   reportPath  String?  @map("report_path") @db.VarChar(500)
+  pdfData     String?  @map("pdf_data") @db.Text  // PDF en Base64 para Vercel serverless
   
   // Metadata
   mimeType    String?  @map("mime_type") @db.VarChar(100)

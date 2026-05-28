@@ -13,13 +13,25 @@ if (process.env.NODE_ENV === 'production') {
   // En producción (Vercel serverless), usar instancia global
   if (!global.prisma) {
     global.prisma = new PrismaClient({
-      log: ['error', 'warn'], // Solo errores y advertencias en producción
+      log: ['error', 'warn'],
       datasources: {
         db: {
           url: process.env.DATABASE_URL,
         },
       },
+      // Configuración optimizada para Supabase Pooler (pool de conexiones)
+      connection: {
+        connectionTimeoutMillis: 5000,
+      },
     });
+    
+    // Conectar explícitamente y manejar errores
+    global.prisma.$connect()
+      .then(() => console.log('✅ Prisma conectado a Supabase'))
+      .catch((err) => {
+        console.error('❌ Error conectando Prisma:', err.message);
+        // No lanzar error para permitir reconexión automática
+      });
   }
   prisma = global.prisma;
 } else {

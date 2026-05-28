@@ -110,21 +110,16 @@ class PDFReportService {
             yPosition = 20;
             yPosition = await this.generateIntegratedSummary(doc, evaluationData, yPosition);
 
-            // Asegurar que el directorio existe
-            const reportsDir = path.dirname(reportPath);
-            if (!fs.existsSync(reportsDir)) {
-                fs.mkdirSync(reportsDir, { recursive: true });
-            }
-
-            // Guardar PDF
+            // Generar PDF en memoria (Buffer) - compatible con Vercel serverless
             const pdfBuffer = doc.output('arraybuffer');
-            fs.writeFileSync(reportPath, Buffer.from(pdfBuffer));
+            const buffer = Buffer.from(pdfBuffer);
 
-            console.log(`✅ PDF generado exitosamente: ${reportPath}`);
+            console.log(`✅ PDF generado en memoria (${Math.round(buffer.length / 1024)}KB)`);
             return {
                 success: true,
-                reportPath: reportPath,
-                fileSize: fs.statSync(reportPath).size
+                buffer: buffer,
+                fileSize: buffer.length,
+                reportPath: null // No se guarda en filesystem
             };
 
         } catch (error) {

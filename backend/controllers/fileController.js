@@ -95,13 +95,14 @@ const uploadFile = async (req, res) => {
         const pdfController = new PDFController();
         const pdfResult = await pdfController.generateCyberSecurityPDF(evaluationData, fileRecord.id);
         
-        // Actualizar registro con resultados y PDF
+        // Actualizar registro con resultados y PDF en base64
         await prisma.file.update({
           where: { id: fileRecord.id },
           data: {
             status: 'COMPLETED',
             result: JSON.stringify(evaluationData),
-            reportPath: pdfResult.success ? pdfResult.reportPath : null
+            reportPath: pdfResult.success ? pdfResult.reportPath : null,
+            pdfData: pdfResult.success ? pdfResult.base64Data : null
           }
         });
         
@@ -450,6 +451,7 @@ const updateFileResult = async (req, res) => {
         
         if (pdfGenerationResult.success) {
           updateData.reportPath = pdfGenerationResult.reportPath;
+          updateData.pdfData = pdfGenerationResult.base64Data;
           console.log(`✅ PDF generado exitosamente: ${pdfGenerationResult.reportFilename}`);
         } else {
           console.error(`❌ Error generando PDF: ${pdfGenerationResult.error}`);
@@ -526,9 +528,17 @@ const downloadReport = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Autenticación requerida' });
     }
 
-    const file = await prisma.file.findUnique({ where: { id: id } });
+    const file = await prisma.file.findUnique({ 
+      where: { id: id },
+      select: {
+        id: true,
+        userId: true,
+        reportPath: true,
+        pdfData: true
+      }
+    });
     
-    if (!file || !file.reportPath) {
+    if (!file || (!file.reportPath && !file.pdfData)) {
       return res.status(404).json({ success: false, message: 'Informe no encontrado' });
     }
 
@@ -540,7 +550,20 @@ const downloadReport = async (req, res) => {
       });
     }
 
-    // Construir ruta completa
+    // Si el PDF está en base64 (Vercel serverless), enviarlo desde memoria
+    if (file.pdfData) {
+      console.log(`📊 Enviando PDF desde base64 (${Math.round(file.pdfData.length / 1024)}KB)`);
+      
+      const pdfBuffer = Buffer.from(file.pdfData, 'base64');
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="Informe_Ciberseguridad_${id.slice(0, 8)}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      return res.send(pdfBuffer);
+    }
+
+    // Fallback: Leer desde filesystem (solo en desarrollo local)
     const fs = require('fs');
     let reportFullPath;
     if (file.reportPath.startsWith('/uploads/')) {
@@ -549,13 +572,13 @@ const downloadReport = async (req, res) => {
       reportFullPath = path.resolve(file.reportPath);
     }
 
-    console.log(`🔍 Buscando PDF en: ${reportFullPath}`);
+    console.log(`🔍 Buscando PDF en filesystem: ${reportFullPath}`);
 
     if (!fs.existsSync(reportFullPath)) {
       return res.status(404).json({ success: false, message: 'Archivo de informe no encontrado en el servidor' });
     }
 
-    console.log(`📄 Descargando informe: Informe_Ciberseguridad_${id.slice(0, 8)}.pdf`);
+    console.log(`📄 Descargando informe desde filesystem: Informe_Ciberseguridad_${id.slice(0, 8)}.pdf`);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="Informe_Ciberseguridad_${id.slice(0, 8)}.pdf"`);
