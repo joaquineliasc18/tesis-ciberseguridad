@@ -50,34 +50,7 @@ const uploadFile = async (req, res) => {
       }
     });
 
-    // Preparar datos para enviar a n8n
-    const webhookData = {
-      fileId: fileRecord.id,
-      filename: fileRecord.filename,
-      filepath: fileRecord.filepath,
-      originalName: file.originalname,
-      size: file.size,
-      mimetype: file.mimetype,
-      timestamp: new Date().toISOString()
-    };
-
-    // Enviar notificación al webhook de n8n (solo si está habilitado)
-    if (process.env.USE_N8N_INTEGRATION === 'true' && process.env.N8N_WEBHOOK_URL) {
-      try {
-        await axios.post(process.env.N8N_WEBHOOK_URL, webhookData, {
-          timeout: 10000, // Timeout aumentado a 10 segundos
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        console.log(`✅ Webhook enviado exitosamente para archivo: ${fileRecord.id}`);
-      } catch (webhookError) {
-        // Log del error pero no fallar la respuesta al cliente
-        console.error(`❌ Error enviando webhook para archivo ${fileRecord.id}:`, webhookError.message);
-      }
-    } else {
-      console.log(`ℹ️ Webhook n8n deshabilitado para archivo: ${fileRecord.id}`);
-    }
+    console.log(`✅ Archivo registrado en BD: ${fileRecord.id}`);
 
     // 🔥 PROCESAR CSV INMEDIATAMENTE si es evaluación de ciberseguridad
     if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
@@ -90,6 +63,37 @@ const uploadFile = async (req, res) => {
         // Procesar evaluación con ChatGPT
         const evaluationData = await securityAnalyzer.processSecurityEvaluation(csvContent);
         console.log(`✅ Evaluación procesada - Nivel ${evaluationData.maturityLevel}/5`);
+        
+        // 🔥 ENVIAR DATOS PROCESADOS A N8N (si está habilitado)
+        if (process.env.USE_N8N_INTEGRATION === 'true' && process.env.N8N_WEBHOOK_URL) {
+          try {
+            const n8nData = {
+              fileId: fileRecord.id,
+              filename: fileRecord.filename,
+              status: 'COMPLETED',
+              evaluation: {
+                globalScore: evaluationData.globalScore,
+                maturityLevel: evaluationData.maturityLevel,
+                maturityName: evaluationData.maturityName,
+                companyInfo: evaluationData.companyInfo,
+                scores: evaluationData.scores,
+                questionsAnalyzed: evaluationData.questionsAnalyzed,
+                recommendations: evaluationData.recommendations,
+                timestamp: evaluationData.timestamp
+              },
+              csvData: csvContent, // Enviar contenido CSV para que n8n pueda verlo
+              processedAt: new Date().toISOString()
+            };
+            
+            await axios.post(process.env.N8N_WEBHOOK_URL, n8nData, {
+              timeout: 15000,
+              headers: { 'Content-Type': 'application/json' }
+            });
+            console.log(`✅ Datos de evaluación enviados a n8n para archivo: ${fileRecord.id}`);
+          } catch (webhookError) {
+            console.error(`❌ Error enviando evaluación a n8n:`, webhookError.message);
+          }
+        }
         
         // Generar PDF
         const pdfController = new PDFController();
