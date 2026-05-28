@@ -367,6 +367,7 @@ class SecurityEvaluationAnalyzer {
             // Calcular nivel de madurez global
             const globalPercentage = Math.round((totalScore / totalMaxScore) * 100);
             const maturityLevel = this.calculateMaturityLevel(globalPercentage);
+            const maturityInfo = this.getMaturityInfo(maturityLevel);
 
             // Información de la empresa para ChatGPT
             const companyInfo = {
@@ -386,6 +387,9 @@ class SecurityEvaluationAnalyzer {
                 companyInfo,
                 globalScore: globalPercentage,
                 maturityLevel,
+                maturityName: maturityInfo.name,
+                maturityColor: maturityInfo.color,
+                maturityDescription: maturityInfo.description,
                 scores: finalScores,
                 questionsAnalyzed: evaluationQuestions.length,
                 confidence: 95,
@@ -425,6 +429,42 @@ class SecurityEvaluationAnalyzer {
         
         // Nivel 1 - Inicial: No existen procesos estándar
         return 1; // 0-24% - Necesidad crítica de establecer fundamentos
+    }
+
+    /**
+     * Obtener información detallada del nivel de madurez
+     * Incluye nombre, color y descripción
+     */
+    getMaturityInfo(maturityLevel) {
+        const maturityInfoMap = {
+            1: {
+                name: 'Inicial - Ad Hoc',
+                color: '#dc3545', // Rojo
+                description: 'Nivel inicial con procesos no estandarizados. Se requiere establecer fundamentos básicos de ciberseguridad.'
+            },
+            2: {
+                name: 'Repetible - Básico',
+                color: '#fd7e14', // Naranja
+                description: 'Procesos básicos existentes pero informales. Se necesita formalización y documentación de procedimientos.'
+            },
+            3: {
+                name: 'Definido - Intermedio',
+                color: '#ffc107', // Amarillo
+                description: 'Base sólida con procesos formales documentados. Existen oportunidades significativas de mejora.'
+            },
+            4: {
+                name: 'Gestionado - Avanzado',
+                color: '#28a745', // Verde
+                description: 'Madurez avanzada con procesos medidos y métricas establecidas. Optimización continua en marcha.'
+            },
+            5: {
+                name: 'Optimizado - Líder',
+                color: '#007bff', // Azul
+                description: 'Excelencia operacional y liderazgo en la industria. Mejora continua y procesos maduros establecidos.'
+            }
+        };
+
+        return maturityInfoMap[maturityLevel] || maturityInfoMap[1];
     }
 
     /**
