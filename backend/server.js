@@ -20,11 +20,31 @@ const PORT = process.env.PORT || 3000;
 // MIDDLEWARES
 // ========================================
 
-// CORS configuration
+// CORS configuration - Permitir todas las URLs de Vercel del proyecto
 const corsOptions = {
-  origin: process.env.VERCEL 
-    ? ['https://ciberseguridad-eight.vercel.app', 'http://localhost:3000']
-    : (process.env.FRONTEND_URL || 'http://localhost:3000'),
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (mobile apps, curl, postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Lista de orígenes permitidos
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'https://ciberseguridad-eight.vercel.app' // URL principal
+    ];
+
+    // Permitir todas las URLs de Vercel del proyecto (previews, branches, etc.)
+    const isVercelURL = origin.match(/https:\/\/ciberseguridad-[a-z0-9-]*\.vercel\.app$/);
+    
+    if (allowedOrigins.includes(origin) || isVercelURL) {
+      callback(null, true);
+    } else {
+      console.log('❌ CORS bloqueado para origin:', origin);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
