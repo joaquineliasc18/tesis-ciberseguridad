@@ -17,17 +17,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ========================================
-// DATABASE INITIALIZATION (for serverless)
-// ========================================
-
-// Inicializar conexión a BD en serverless
-if (process.env.NODE_ENV === 'production') {
-  prisma.$connect()
-    .then(() => console.log('✅ Prisma conectado a la base de datos'))
-    .catch((err) => console.error('❌ Error conectando Prisma:', err.message));
-}
-
-// ========================================
 // MIDDLEWARES
 // ========================================
 

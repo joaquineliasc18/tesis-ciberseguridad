@@ -12,10 +12,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ACCESS_EXPIRATION = process.env.JWT_ACCESS_EXPIRATION || '15m';
 const JWT_REFRESH_EXPIRATION = process.env.JWT_REFRESH_EXPIRATION || '7d';
 
-// Validar que JWT_SECRET esté configurado
+// Validar que JWT_SECRET esté configurado (solo advertencia, no error fatal)
 if (!JWT_SECRET) {
   console.error('🚨 JWT_SECRET no está configurado. La autenticación NO funcionará.');
-  throw new Error('JWT_SECRET environment variable is required');
+  console.error('Por favor configura la variable de entorno JWT_SECRET en Vercel.');
 }
 
 /**
@@ -24,6 +24,10 @@ if (!JWT_SECRET) {
  * @returns {string} JWT token
  */
 function generateAccessToken(user) {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET no está configurado');
+  }
+
   const payload = {
     userId: user.id,
     email: user.email,
@@ -92,6 +96,11 @@ async function generateRefreshToken(userId, metadata = {}) {
  * @returns {Object|null} Payload decodificado o null si inválido
  */
 function verifyAccessToken(token) {
+  if (!JWT_SECRET) {
+    console.error('❌ JWT_SECRET no está configurado - No se puede verificar token');
+    return null;
+  }
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     

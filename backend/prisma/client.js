@@ -19,10 +19,6 @@ if (process.env.NODE_ENV === 'production') {
           url: process.env.DATABASE_URL,
         },
       },
-      // Configuración optimizada para Supabase Pooler (pool de conexiones)
-      connection: {
-        connectionTimeoutMillis: 5000,
-      },
     });
     
     // Conectar explícitamente y manejar errores
