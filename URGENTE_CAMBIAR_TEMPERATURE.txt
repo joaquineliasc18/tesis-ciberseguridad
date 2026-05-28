@@ -1,0 +1,88 @@
+# ⚠️ ACCIÓN URGENTE: Temperature en 0.7 (debe ser 0.0)
+
+## 🎯 PASOS EXACTOS
+
+### 1. VERIFICAR VARIABLE
+```
+Vercel → Settings → Environment Variables
+Buscar: OPENAI_TEMPERATURE
+```
+
+**¿Qué valor tiene?**
+- [ ] Dice "0.7" → Cambiar a `0.0`
+- [ ] Dice "0.0" → Ya está bien, solo falta redeploy
+- [ ] No existe → Crear con valor `0.0`
+
+---
+
+### 2. CAMBIAR VALOR
+
+**Editar variable existente:**
+```
+⋮ → Edit → Value: 0.0 → Save
+```
+
+**O crear nueva:**
+```
+Add New
+  Name: OPENAI_TEMPERATURE
+  Value: 0.0
+  Environment: ✅ Production ✅ Preview ✅ Development
+  Save
+```
+
+---
+
+### 3. REDEPLOY SIN CACHÉ
+
+```
+Deployments → ⋮ (último) → Redeploy
+❌ DESMARCAR "Use existing Build Cache"
+Confirm → ESPERAR 3-5 min
+```
+
+---
+
+### 4. VERIFICAR
+
+**Logs deben mostrar:**
+```
+🌡️  Temperature: 0 (DETERMINÍSTICO)  ✅
+```
+
+**NO debe mostrar:**
+```
+🌡️  Temperature: 0.7 (CREATIVO)  ❌
+```
+
+---
+
+## 🔍 VERIFICACIÓN RÁPIDA
+
+Después del redeploy, inicia sesión y abre:
+```
+https://ciberseguridad-eight.vercel.app/api/files/test/chatgpt
+```
+
+Debe devolver:
+```json
+{
+  "config": {
+    "temperature": 0
+  }
+}
+```
+
+---
+
+## 📸 SI NO FUNCIONA
+
+Toma screenshots de:
+1. Vercel → Settings → Environment Variables (todas)
+2. Variable OPENAI_TEMPERATURE específica
+3. Último deployment en Deployments
+4. Logs del último deployment
+
+---
+
+**Primero verifica qué dice OPENAI_TEMPERATURE en Vercel y compártelo aquí.** 🔍
