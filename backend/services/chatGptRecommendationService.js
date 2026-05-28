@@ -23,6 +23,17 @@ class ChatGptRecommendationService {
         
         this.enabled = process.env.USE_CHATGPT_RECOMMENDATIONS === 'true';
         
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('🔧 CONFIGURACIÓN DE CHATGPT RECOMMENDATIONS');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log(`✅ Habilitado: ${this.enabled}`);
+        console.log(`🤖 Modelo: ${this.config.model}`);
+        console.log(`🌡️  Temperature: ${this.config.temperature} ${this.config.temperature === 0 ? '(DETERMINÍSTICO)' : '(CREATIVO)'}`);
+        console.log(`📝 Max Tokens: ${this.config.maxTokens}`);
+        console.log(`⏱️  Timeout: ${this.config.timeout}ms`);
+        console.log(`🔑 API Key: ${process.env.OPENAI_API_KEY ? '✅ Configurada' : '❌ NO configurada'}`);
+        console.log('═══════════════════════════════════════════════════════════════');
+        
         // Mapeo de códigos técnicos a descripciones empresariales legibles
         this.QUESTION_DESCRIPTIONS = {
             // GOBIERNO
@@ -104,8 +115,11 @@ class ChatGptRecommendationService {
 
             const prompt = this.buildDimensionPrompt(companyInfo, dimension, dimensionData, questionAnswers, nistCategories);
             
-            console.log(`🤖 Generando recomendación ChatGPT para ${dimension}...`);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log(`🤖 Generando recomendación ChatGPT para ${dimension}`);
             console.log(`📊 Score: ${dimensionData.score}% | Preguntas: ${questionAnswers.length}`);
+            console.log(`🔧 Usando: ${this.config.model} | Temp: ${this.config.temperature} | Seed: 42`);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             
             const completion = await Promise.race([
                 this.openai.chat.completions.create({
@@ -138,7 +152,14 @@ class ChatGptRecommendationService {
                 throw new Error('Empty response from ChatGPT');
             }
 
-            console.log(`✅ Recomendación ChatGPT generada para ${dimension} (${recommendation.length} caracteres)`);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log(`✅ Recomendación generada para ${dimension}`);
+            console.log(`📏 Longitud: ${recommendation.length} caracteres`);
+            console.log(`🎯 Modelo usado: ${this.config.model}`);
+            console.log(`🌡️  Temperature: ${this.config.temperature}`);
+            console.log(`📊 Tokens usados: Input=${completion.usage?.prompt_tokens || 'N/A'} | Output=${completion.usage?.completion_tokens || 'N/A'}`);
+            console.log(`💰 Costo estimado: $${this.estimateCost(completion.usage)}`);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             return recommendation;
 
         } catch (error) {
@@ -832,6 +853,32 @@ OBJETIVO: Respuesta idéntica para evaluación idéntica.`;
                 error: error.code || error.type
             };
         }
+    }
+
+    /**
+     * Estimar costo de la llamada a OpenAI
+     */
+    estimateCost(usage) {
+        if (!usage) return '0.000000';
+        
+        const inputTokens = usage.prompt_tokens || 0;
+        const outputTokens = usage.completion_tokens || 0;
+        
+        // Precios por 1M tokens (mayo 2026)
+        const prices = {
+            'gpt-4o': { input: 2.50, output: 10.00 },
+            'gpt-4o-mini': { input: 0.15, output: 0.60 },
+            'gpt-4-turbo': { input: 10.00, output: 30.00 },
+            'gpt-4': { input: 30.00, output: 60.00 }
+        };
+        
+        const modelPrices = prices[this.config.model] || prices['gpt-4o'];
+        
+        const inputCost = (inputTokens / 1000000) * modelPrices.input;
+        const outputCost = (outputTokens / 1000000) * modelPrices.output;
+        const totalCost = inputCost + outputCost;
+        
+        return totalCost.toFixed(6);
     }
 }
 
