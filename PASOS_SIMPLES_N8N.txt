@@ -1,0 +1,113 @@
+═══════════════════════════════════════════════════════════════════
+     SOLUCIÓN AL ERROR "NODE NOT FOUND" EN N8N - 5 PASOS
+═══════════════════════════════════════════════════════════════════
+
+❌ PROBLEMA:
+   "Node not found - URL contained a reference to an unknown node"
+
+✅ CAUSA:
+   Tienes el workflow VIEJO en n8n. Necesitas ELIMINAR e IMPORTAR nuevo.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 1: ELIMINAR WORKFLOW VIEJO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: https://ciberseguridad-tesis.app.n8n.cloud
+2. Clic en "Workflows" (menú lateral)
+3. Busca "Automated Document Processor"
+4. Clic en "⋮" (tres puntos) → "Delete"
+5. Confirma
+
+⚠️ NO EDITES - TIENES QUE ELIMINAR Y REIMPORTAR ⚠️
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 2: IMPORTAR WORKFLOW NUEVO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A. Busca este archivo en tu computadora:
+
+   C:\PROYECTOS PERSONALES\Automatizacion-Ciberseguridad\
+   Automated-Document-Processor\n8n\workflow-procesamiento-archivos.json
+
+B. En n8n:
+   1. Clic en "+" (botón grande arriba)
+   2. Clic en "⋮" (menú esquina superior derecha)
+   3. "Import from File..."
+   4. Selecciona el archivo workflow-procesamiento-archivos.json
+   5. Clic "Import"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 3: VERIFICAR 3 NODOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Debes ver EXACTAMENTE:
+
+   [Webhook] ──→ [Analyze Data] ──→ [Display Summary]
+
+Si solo ves 2 nodos, repite PASO 2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 4: ACTIVAR WORKFLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Clic "Save" (botón azul arriba a la derecha)
+2. Nombre: "Automated Document Processor"
+3. Activa el toggle "Active" (debe ponerse verde ✅)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 5: COPIAR URL Y ACTUALIZAR VERCEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A. En n8n:
+   1. Clic en nodo "Webhook" (primer nodo)
+   2. Verás "Production URL" en el panel derecho
+   3. Copia esa URL (parecida a):
+      https://ciberseguridad-tesis.app.n8n.cloud/webhook/file_uploaded
+
+B. En Vercel:
+   1. Abre: https://vercel.com/dashboard
+   2. Selecciona proyecto "ciberseguridad-eight"
+   3. Settings → Environment Variables
+   4. Busca "N8N_WEBHOOK_URL"
+   5. Edit → Pega la URL que copiaste
+   6. ✅ Marca los 3 ambientes (Production, Preview, Development)
+   7. Save
+   8. Ve a Deployments → ⋮ → Redeploy (DESMARCA "cache")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROBAR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abre: https://ciberseguridad-eight.vercel.app
+2. Inicia sesión
+3. Sube un archivo CSV
+4. Ve a n8n → "Executions" → Debes ver ejecución verde ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHECKLIST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] Eliminé workflow viejo en n8n
+[ ] Importé workflow nuevo
+[ ] Veo 3 NODOS (no 2)
+[ ] Activé workflow (verde)
+[ ] Copié Production URL
+[ ] Actualicé N8N_WEBHOOK_URL en Vercel (3 ambientes)
+[ ] Hice Redeploy sin caché
+[ ] Ya NO aparece "Node not found" ✅
+
+═══════════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANTE:
+   - NO puedes editar el workflow existente
+   - TIENES que eliminar e importar nuevo
+   - DEBE mostrar 3 nodos, no 2
+
+═══════════════════════════════════════════════════════════════════
