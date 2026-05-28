@@ -186,42 +186,40 @@ class ChatGptRecommendationService {
             throw new Error('ChatGPT recommendations are disabled');
         }
 
-        const recommendations = {};
         const dimensions = Object.keys(dimensionsData);
-        
-        console.log(`🤖 Iniciando generación ChatGPT para ${dimensions.length} dimensiones...`);
+        console.log(`🤖 Iniciando generación ChatGPT para ${dimensions.length} dimensiones (paralelo)...`);
 
-        for (const dimension of dimensions) {
+        // Ejecutar todas las dimensiones en paralelo
+        const results = await Promise.all(dimensions.map(async (dimension) => {
             try {
                 const dimensionData = dimensionsData[dimension];
-                const questionAnswers = allQuestionAnswers.filter(qa => 
-                    qa.dimension === dimension
-                );
+                const questionAnswers = allQuestionAnswers.filter(qa => qa.dimension === dimension);
                 const nistCategories = this.extractNistCategories(questionAnswers);
-                
+
                 const recommendation = await this.generateDimensionRecommendation(
-                    companyInfo, 
-                    dimension, 
-                    dimensionData, 
-                    questionAnswers, 
+                    companyInfo,
+                    dimension,
+                    dimensionData,
+                    questionAnswers,
                     nistCategories
                 );
-                
-                recommendations[dimension] = {
+
+                return [dimension, {
                     score: dimensionData.score,
                     recommendation: recommendation,
                     categories: nistCategories,
                     source: 'ChatGPT',
                     timestamp: new Date().toISOString()
-                };
-                
+                }];
             } catch (error) {
                 console.error(`❌ Error en ${dimension}, usando fallback:`, error.message);
                 // En caso de error, retornamos null para que use el sistema fallback
-                recommendations[dimension] = null;
+                return [dimension, null];
             }
-        }
+        }));
 
+        // Convertir array de pares [dimension, data] a objeto
+        const recommendations = Object.fromEntries(results);
         return recommendations;
     }
 
