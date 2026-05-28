@@ -1,0 +1,104 @@
+═══════════════════════════════════════════════════════════════════════════
+    ⚠️  ACCIÓN REQUERIDA: ACTUALIZAR VARIABLES EN VERCEL
+═══════════════════════════════════════════════════════════════════════════
+
+Los cambios se han subido a GitHub, pero DEBES actualizar estas 2 variables
+en Vercel para que el sistema use el nuevo modelo gpt-4o:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 1: Ir a Vercel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+URL: https://vercel.com/dashboard
+Proyecto: ciberseguridad-eight
+Sección: Settings → Environment Variables
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 2: Actualizar OPENAI_MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Variable: OPENAI_MODEL
+Valor actual: gpt-4o-mini
+Nuevo valor: gpt-4o
+
+✅ Marca los 3 ambientes: Production, Preview, Development
+💾 Save
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 3: Actualizar OPENAI_TEMPERATURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Variable: OPENAI_TEMPERATURE
+Valor actual: 0.7 (o no existe)
+Nuevo valor: 0.0
+
+✅ Marca los 3 ambientes: Production, Preview, Development
+💾 Save
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 4: Redeploy SIN CACHÉ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Ve a: Deployments
+2. Selecciona el deployment más reciente
+3. Clic en "⋮" → "Redeploy"
+4. ⚠️  DESMARCA "Use existing Build Cache"
+5. Confirma
+6. Espera 3-5 minutos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERIFICACIÓN: ¿Cómo saber si funcionó?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Sube un CSV de evaluación
+2. Ve a Vercel → Deployments → Functions → /api/index.js
+3. Busca en los logs:
+
+   ✅ Verás: "Modelo: gpt-4o | Tokens: 1500 | Temp: 0"
+   ❌ NO verás: "gpt-4o-mini"
+
+4. Descarga el PDF generado
+5. Verifica que las recomendaciones:
+   - Citan controles específicos: [GV.RA-02], [PR.AC-01], etc.
+   - NO tienen lenguaje florido ("Excelente trabajo", "Felicitaciones")
+   - Son directas y accionables
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHECKLIST DE ACTUALIZACIÓN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] OPENAI_MODEL actualizado a "gpt-4o"
+[ ] OPENAI_TEMPERATURE actualizado a "0.0"
+[ ] Ambas variables aplicadas a los 3 ambientes
+[ ] Redeploy realizado SIN caché
+[ ] Logs muestran "Modelo: gpt-4o"
+[ ] PDF nuevo usa recomendaciones con referencias [ID]
+[ ] NO aparece lenguaje florido en recomendaciones
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 IMPACTO ESPERADO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANTES (gpt-4o-mini, temp 0.7):
+❌ Recomendaciones genéricas y floridas
+❌ Sin referencias verificables
+❌ Diferentes en cada ejecución
+
+AHORA (gpt-4o, temp 0.0):
+✅ Recomendaciones profesionales con [IDs]
+✅ Referencias verificables del RAG
+✅ DETERMINÍSTICAS: mismo CSV = misma recomendación
+
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️  NO OLVIDES: Sin estas actualizaciones en Vercel, el sistema seguirá
+                usando gpt-4o-mini con temperature 0.7 (antiguo)
+
+═══════════════════════════════════════════════════════════════════════════
