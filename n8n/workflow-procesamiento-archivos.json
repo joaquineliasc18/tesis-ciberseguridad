@@ -16,13 +16,23 @@
     },
     {
       "parameters": {
-        "jsCode": "// Recibir datos completos del backend\nconst webhookData = $input.first().json;\nconst data = webhookData.body || webhookData;\n\nconsole.log(`📄 Archivo procesado: ${data.filename}`);\nconsole.log(`🎯 Score global: ${data.evaluation?.globalScore}%`);\nconsole.log(`📊 Nivel de madurez: ${data.evaluation?.maturityLevel}/5`);\n\n// Los datos ya están completamente procesados por el backend\n// Solo necesitamos organizarlos o filtrarlos si queremos\n\nif (!data.evaluation) {\n    console.log('⚠️ No hay datos de evaluación disponibles');\n    return {\n        fileId: data.fileId,\n        filename: data.filename,\n        status: data.status || 'PENDING',\n        message: 'Archivo recibido pero sin evaluación aún'\n    };\n}\n\n// Extraer información clave\nconst evaluation = data.evaluation;\nconst scores = evaluation.scores || {};\n\n// Identificar áreas débiles (score < 50%)\nconst weakAreas = Object.entries(scores)\n    .filter(([key, value]) => value.score < 50)\n    .map(([key, value]) => ({\n        dimension: value.name,\n        score: value.score,\n        obtained: value.obtained,\n        maximum: value.maximum\n    }));\n\n// Identificar áreas fuertes (score >= 75%)\nconst strongAreas = Object.entries(scores)\n    .filter(([key, value]) => value.score >= 75)\n    .map(([key, value]) => ({\n        dimension: value.name,\n        score: value.score,\n        obtained: value.obtained,\n        maximum: value.maximum\n    }));\n\n// Preparar resultado para enviar de vuelta o usar en siguientes nodos\nconst result = {\n    fileId: data.fileId,\n    filename: data.filename,\n    status: data.status,\n    processedAt: data.processedAt,\n    \n    // Información de la empresa\n    company: {\n        name: evaluation.companyInfo?.name || 'No especificado',\n        email: evaluation.companyInfo?.email || 'No especificado',\n        size: evaluation.companyInfo?.size || 'PYME'\n    },\n    \n    // Resumen de la evaluación\n    summary: {\n        globalScore: evaluation.globalScore,\n        maturityLevel: evaluation.maturityLevel,\n        maturityName: evaluation.maturityName,\n        questionsAnalyzed: evaluation.questionsAnalyzed,\n        confidence: evaluation.confidence || 95\n    },\n    \n    // Scores detallados por dimensión\n    dimensions: scores,\n    \n    // Análisis de fortalezas y debilidades\n    analysis: {\n        weakAreas: weakAreas,\n        strongAreas: strongAreas,\n        needsImprovement: weakAreas.length > 0,\n        overallStatus: evaluation.globalScore >= 75 ? 'Excellent' : \n                       evaluation.globalScore >= 50 ? 'Good' : \n                       evaluation.globalScore >= 25 ? 'Needs Improvement' : 'Critical'\n    },\n    \n    // Recomendaciones\n    recommendations: evaluation.recommendations || [],\n    \n    // Timestamp\n    timestamp: evaluation.timestamp\n};\n\nconsole.log(`✅ Datos organizados para empresa: ${result.company.name}`);\nconsole.log(`📈 Status: ${result.analysis.overallStatus}`);\nconsole.log(`⚠️ Áreas débiles: ${weakAreas.length}`);\nconsole.log(`✨ Áreas fuertes: ${strongAreas.length}`);\n\nreturn result;"
+        "jsCode": "// Recibir datos completos del backend\nconst webhookData = $input.first().json;\nconst data = webhookData.body || webhookData;\n\nconsole.log(`📄 Archivo procesado: ${data.filename}`);\nconsole.log(`🎯 Score global: ${data.evaluation?.globalScore}%`);\nconsole.log(`📊 Nivel de madurez: ${data.evaluation?.maturityLevel}/5`);\n\n// Los datos ya están completamente procesados por el backend\n// Solo necesitamos organizarlos o filtrarlos si queremos\n\nif (!data.evaluation) {\n    console.log('⚠️ No hay datos de evaluación disponibles');\n    return {\n        fileId: data.fileId,\n        filename: data.filename,\n        status: data.status || 'PENDING',\n        message: 'Archivo recibido pero sin evaluación aún'\n    };\n}\n\n// Extraer información clave\nconst evaluation = data.evaluation;\nconst scores = evaluation.scores || {};\n\n// Identificar áreas débiles (score < 50%)\nconst weakAreas = Object.entries(scores)\n    .filter(([key, value]) => value.score < 50)\n    .map(([key, value]) => ({\n        dimension: value.name,\n        score: value.score,\n        obtained: value.obtained,\n        maximum: value.maximum\n    }));\n\n// Identificar áreas fuertes (score >= 75%)\nconst strongAreas = Object.entries(scores)\n    .filter(([key, value]) => value.score >= 75)\n    .map(([key, value]) => ({\n        dimension: value.name,\n        score: value.score,\n        obtained: value.obtained,\n        maximum: value.maximum\n    }));\n\n// Preparar resultado completo\nconst result = {\n    fileId: data.fileId,\n    filename: data.filename,\n    status: data.status,\n    processedAt: data.processedAt,\n    \n    // Información de la empresa\n    company: {\n        name: evaluation.companyInfo?.name || 'No especificado',\n        email: evaluation.companyInfo?.email || 'No especificado',\n        size: evaluation.companyInfo?.size || 'PYME'\n    },\n    \n    // Resumen de la evaluación\n    summary: {\n        globalScore: evaluation.globalScore,\n        maturityLevel: evaluation.maturityLevel,\n        maturityName: evaluation.maturityName,\n        questionsAnalyzed: evaluation.questionsAnalyzed,\n        confidence: evaluation.confidence || 95\n    },\n    \n    // Scores detallados por dimensión\n    dimensions: scores,\n    \n    // Análisis de fortalezas y debilidades\n    analysis: {\n        weakAreas: weakAreas,\n        strongAreas: strongAreas,\n        needsImprovement: weakAreas.length > 0,\n        overallStatus: evaluation.globalScore >= 75 ? 'Excellent' : \n                       evaluation.globalScore >= 50 ? 'Good' : \n                       evaluation.globalScore >= 25 ? 'Needs Improvement' : 'Critical'\n    },\n    \n    // Recomendaciones\n    recommendations: evaluation.recommendations || [],\n    \n    // Timestamp\n    timestamp: evaluation.timestamp\n};\n\nconsole.log(`✅ Datos organizados para empresa: ${result.company.name}`);\nconsole.log(`📈 Status: ${result.analysis.overallStatus}`);\nconsole.log(`⚠️ Áreas débiles: ${weakAreas.length}`);\nconsole.log(`✨ Áreas fuertes: ${strongAreas.length}`);\n\nreturn result;"
       },
       "id": "b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e",
-      "name": "Process Evaluation Data",
+      "name": "Analyze Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Este nodo es opcional - el backend ya procesó y guardó todo\n// Pero puedes usarlo para logging o enviar a otros servicios\n\nconst data = $input.first().json;\n\nconsole.log('='.repeat(50));\nconsole.log('📊 RESUMEN DE EVALUACIÓN DE CIBERSEGURIDAD');\nconsole.log('='.repeat(50));\nconsole.log(`\\n🏢 EMPRESA: ${data.company.name}`);\nconsole.log(`📧 Email: ${data.company.email}`);\nconsole.log(`\\n📈 PUNTUACIÓN GLOBAL: ${data.summary.globalScore}%`);\nconsole.log(`🎯 Nivel de Madurez: ${data.summary.maturityLevel}/5 (${data.summary.maturityName})`);\nconsole.log(`📋 Preguntas Analizadas: ${data.summary.questionsAnalyzed}`);\nconsole.log(`\\n✅ STATUS: ${data.analysis.overallStatus}`);\n\nif (data.analysis.weakAreas.length > 0) {\n    console.log(`\\n⚠️ ÁREAS QUE NECESITAN MEJORA (score < 50%):`);\n    data.analysis.weakAreas.forEach(area => {\n        console.log(`   - ${area.dimension}: ${area.score}% (${area.obtained}/${area.maximum} pts)`);\n    });\n}\n\nif (data.analysis.strongAreas.length > 0) {\n    console.log(`\\n✨ FORTALEZAS (score >= 75%):`);\n    data.analysis.strongAreas.forEach(area => {\n        console.log(`   - ${area.dimension}: ${area.score}% (${area.obtained}/${area.maximum} pts)`);\n    });\n}\n\nconsole.log('\\n' + '='.repeat(50));\nconsole.log('✅ Evaluación completada y guardada en la base de datos');\nconsole.log('📄 PDF generado y almacenado');\nconsole.log('='.repeat(50));\n\n// Retornar los datos para uso en nodos posteriores\nreturn data;"
+      },
+      "id": "c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f",
+      "name": "Display Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
     }
   ],
   "connections": {
@@ -30,7 +40,18 @@
       "main": [
         [
           {
-            "node": "Process Evaluation Data",
+            "node": "Analyze Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Data": {
+      "main": [
+        [
+          {
+            "node": "Display Summary",
             "type": "main",
             "index": 0
           }
