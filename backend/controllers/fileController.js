@@ -669,36 +669,99 @@ const getCyberSecurityEvaluation = async (req, res) => {
   }
 };
 
-// Test de ChatGPT
+// Test de ChatGPT y configuración completa
 const testChatGPT = async (req, res) => {
   try {
-    console.log('🧪 Ejecutando test de ChatGPT desde API...');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('🧪 EJECUTANDO TEST DE CHATGPT DESDE API');
+    console.log('═══════════════════════════════════════════════════════════════');
     
+    // 1. Verificar configuración
+    const config = {
+      enabled: process.env.USE_CHATGPT_RECOMMENDATIONS === 'true',
+      model: process.env.OPENAI_MODEL || 'gpt-4o',
+      temperature: process.env.OPENAI_TEMPERATURE !== undefined ? parseFloat(process.env.OPENAI_TEMPERATURE) : 0.0,
+      maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 1500,
+      timeout: parseInt(process.env.CHATGPT_TIMEOUT) || 30000,
+      hasApiKey: !!process.env.OPENAI_API_KEY,
+      apiKeyPrefix: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NO CONFIGURADA'
+    };
+    
+    console.log('📋 Configuración detectada:');
+    console.log(`   ✅ Habilitado: ${config.enabled}`);
+    console.log(`   🤖 Modelo: ${config.model}`);
+    console.log(`   🌡️  Temperature: ${config.temperature} ${config.temperature === 0 ? '(DETERMINÍSTICO)' : '(CREATIVO)'}`);
+    console.log(`   📝 Max Tokens: ${config.maxTokens}`);
+    console.log(`   ⏱️  Timeout: ${config.timeout}ms`);
+    console.log(`   🔑 API Key: ${config.hasApiKey ? '✅ Configurada' : '❌ NO configurada'} (${config.apiKeyPrefix})`);
+    console.log('═══════════════════════════════════════════════════════════════');
+    
+    // 2. Verificar si está habilitado
+    if (!config.enabled) {
+      console.log('⚠️  ChatGPT DESHABILITADO - Falta variable USE_CHATGPT_RECOMMENDATIONS=true');
+      return res.json({
+        success: false,
+        message: 'ChatGPT está DESHABILITADO',
+        config: config,
+        recommendation: 'Agregar variable de entorno: USE_CHATGPT_RECOMMENDATIONS=true'
+      });
+    }
+    
+    // 3. Verificar API Key
+    if (!config.hasApiKey) {
+      console.log('❌ API Key NO configurada');
+      return res.status(500).json({
+        success: false,
+        message: 'OPENAI_API_KEY no está configurada',
+        config: config,
+        recommendation: 'Agregar variable de entorno: OPENAI_API_KEY=sk-...'
+      });
+    }
+    
+    // 4. Test de conexión real
+    console.log('🔄 Probando conexión con OpenAI...');
     const testResult = await chatGptService.testConnection();
     
     if (testResult.success) {
-      console.log('✅ Test ChatGPT exitoso');
+      console.log('✅ Test ChatGPT EXITOSO');
+      console.log(`   Respuesta: ${testResult.message}`);
+      console.log(`   Tokens usados: ${testResult.usage ? JSON.stringify(testResult.usage) : 'N/A'}`);
+      console.log('═══════════════════════════════════════════════════════════════');
+      
       res.json({
         success: true,
-        message: 'ChatGPT está funcionando correctamente',
-        data: testResult
+        message: 'ChatGPT está funcionando correctamente ✅',
+        config: config,
+        connectionTest: testResult,
+        recommendation: config.model === 'gpt-4o' && config.temperature === 0 
+          ? '✅ Configuración ÓPTIMA para recomendaciones profesionales determinísticas'
+          : '⚠️  Para mejores resultados usa: OPENAI_MODEL=gpt-4o y OPENAI_TEMPERATURE=0.0'
       });
     } else {
-      console.log('❌ Test ChatGPT falló:', testResult.message);
+      console.log('❌ Test ChatGPT FALLÓ:', testResult.message);
+      console.log('═══════════════════════════════════════════════════════════════');
+      
       res.status(500).json({
         success: false,
-        message: 'ChatGPT no está disponible',
+        message: 'ChatGPT no está disponible ❌',
+        config: config,
         error: testResult.message,
-        errorCode: testResult.error
+        errorCode: testResult.error,
+        recommendation: testResult.error === 'insufficient_quota' 
+          ? 'Sin créditos en OpenAI - Agregar saldo en: https://platform.openai.com/account/billing'
+          : 'Verificar API Key en: https://platform.openai.com/api-keys'
       });
     }
     
   } catch (error) {
     console.error('❌ Error ejecutando test ChatGPT:', error);
+    console.log('═══════════════════════════════════════════════════════════════');
+    
     res.status(500).json({
       success: false,
       message: 'Error interno ejecutando test ChatGPT',
-      error: error.message
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
