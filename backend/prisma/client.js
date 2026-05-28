@@ -10,31 +10,31 @@ const { PrismaClient } = require('@prisma/client');
 let prisma;
 
 if (process.env.NODE_ENV === 'production') {
-  // En producción (Vercel serverless), usar instancia global
+  // En producción (Vercel serverless), usar instancia global con connection pooling
   if (!global.prisma) {
     global.prisma = new PrismaClient({
-      log: ['error', 'warn'],
+      log: process.env.DEBUG === 'true' ? ['query', 'error', 'warn'] : ['error'],
       datasources: {
         db: {
           url: process.env.DATABASE_URL,
         },
       },
     });
-    
-    // Conectar explícitamente y manejar errores
-    global.prisma.$connect()
-      .then(() => console.log('✅ Prisma conectado a Supabase'))
-      .catch((err) => {
-        console.error('❌ Error conectando Prisma:', err.message);
-        // No lanzar error para permitir reconexión automática
-      });
   }
   prisma = global.prisma;
+  
+  // Asegurar que la conexión esté lista (sin await para no bloquear)
+  prisma.$connect().catch((err) => {
+    console.error('❌ Error inicial conectando Prisma:', err.message);
+  });
 } else {
   // En desarrollo, crear nueva instancia con logs completos
-  prisma = new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'],
-  });
+  if (!global.prisma) {
+    global.prisma = new PrismaClient({
+      log: ['query', 'info', 'warn', 'error'],
+    });
+  }
+  prisma = global.prisma;
 
   // Manejo graceful del cierre solo en desarrollo
   process.on('SIGINT', async () => {
