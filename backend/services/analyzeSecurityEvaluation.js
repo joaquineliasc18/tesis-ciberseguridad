@@ -529,16 +529,28 @@ class SecurityEvaluationAnalyzer {
                 // Si ChatGPT generó recomendación para esta dimensión, usarla
                 if (chatGptRecommendations[dimension] && chatGptRecommendations[dimension].recommendation) {
                     console.log(`✅ Usando recomendación ChatGPT para ${dimension}`);
+                    const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
+                        chatGptRecommendations[dimension].recommendation,
+                        dimensionData,
+                        dimensionQuestions
+                    );
                     finalRecommendations[dimension] = {
                         ...chatGptRecommendations[dimension],
+                        recommendation: enrichedRecommendation,
                         source: 'ChatGPT'
                     };
                 } else {
                     // Fallback al sistema de recomendaciones interno
                     console.log(`⚡ Usando fallback para ${dimension}`);
+                    const fallbackRecommendation = this.generateFallbackRecommendation(dimension, dimensionData, dimensionQuestions);
+                    const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
+                        fallbackRecommendation,
+                        dimensionData,
+                        dimensionQuestions
+                    );
                     finalRecommendations[dimension] = {
                         score: dimensionData.score,
-                        recommendation: this.generateFallbackRecommendation(dimension, dimensionData, dimensionQuestions),
+                        recommendation: enrichedRecommendation,
                         categories: this.getDimensionCategories(dimensionQuestions),
                         source: 'Internal'
                     };
@@ -585,16 +597,53 @@ class SecurityEvaluationAnalyzer {
         Object.keys(scores).forEach(dimension => {
             const dimensionData = scores[dimension];
             const dimensionQuestions = evaluationQuestions.filter(q => q.dimension === dimension);
+            const fallbackRecommendation = this.generateFallbackRecommendation(dimension, dimensionData, dimensionQuestions);
+            const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
+                fallbackRecommendation,
+                dimensionData,
+                dimensionQuestions
+            );
             
             dimensionRecommendations[dimension] = {
                 score: dimensionData.score,
-                recommendation: this.generateFallbackRecommendation(dimension, dimensionData, dimensionQuestions),
+                recommendation: enrichedRecommendation,
                 categories: this.getDimensionCategories(dimensionQuestions),
                 source: 'Internal'
             };
         });
 
         return dimensionRecommendations;
+    }
+
+    /**
+     * Contar palabras de una recomendación.
+     */
+    countWords(text) {
+        if (!text || typeof text !== 'string') return 0;
+        return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    /**
+     * Asegurar detalle mínimo uniforme en recomendaciones por dimensión.
+     */
+    ensureDetailedDimensionRecommendation(recommendation, dimensionData, dimensionQuestions) {
+        const minWords = 120;
+        const currentWords = this.countWords(recommendation);
+
+        if (currentWords >= minWords) {
+            return recommendation;
+        }
+
+        const score = dimensionData?.score ?? 0;
+        const timeframe = score < 25 ? '4-6 meses' : score < 50 ? '3-5 meses' : '2-4 meses';
+        const categoryList = this.getDimensionCategories(dimensionQuestions || []).slice(0, 3);
+        const alcance = categoryList.length > 0
+            ? categoryList.join(', ')
+            : 'procesos críticos de la dimensión evaluada';
+
+        const detailBlock = ` En términos de ejecución, se recomienda estructurar esta mejora en un plan por fases con horizonte de ${timeframe}, iniciando por los controles de mayor impacto en reducción de riesgo y continuidad operativa. El alcance debe cubrir ${alcance}, con responsables definidos por proceso y seguimiento quincenal de avances para asegurar resultados sostenibles. Como ejemplo práctico, puede iniciarse con un piloto controlado en el área de mayor exposición, validar resultados en 30 días y luego escalar progresivamente al resto de la organización. El valor esperado es una mejora medible en madurez, mayor trazabilidad para auditoría y reducción del riesgo residual.`;
+
+        return `${recommendation}${detailBlock}`;
     }
 
     /**
