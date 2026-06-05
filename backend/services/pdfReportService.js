@@ -830,21 +830,31 @@ class PDFReportService {
         const strongestDimension = sortedDimensions[0] ? sortedDimensions[0][1].name : '';
         const weakestDimension = sortedDimensions[sortedDimensions.length - 1] ? sortedDimensions[sortedDimensions.length - 1][1].name : '';
         
-        let summary = `${company} presenta un nivel ${level} de madurez en ciberseguridad con una puntuación global de ${globalScore}%. `;
-        
-        if (globalScore < 30) {
-            summary += `La evaluación revela oportunidades significativas de mejora en todas las dimensiones de seguridad. Es fundamental establecer bases sólidas comenzando por ${weakestDimension.toLowerCase()} y construyendo gradualmente capacidades en las demás áreas. `;
-        } else if (globalScore < 60) {
-            summary += `La organización muestra un desarrollo sólido en varias áreas, destacando particularmente en ${strongestDimension.toLowerCase()}. Las principales oportunidades de mejora se concentran en ${weakestDimension.toLowerCase()}, donde inversiones focalizadas pueden generar mejoras significativas en la postura general de seguridad. `;
-        } else if (globalScore < 80) {
-            summary += `La organización demuestra una madurez considerable en ciberseguridad, con fortalezas notables en ${strongestDimension.toLowerCase()}. Para avanzar hacia la excelencia, se recomienda optimizar procesos en ${weakestDimension.toLowerCase()} y considerar la automatización de controles existentes. `;
-        } else {
-            summary += `La organización ha alcanzado un nivel excepcional de madurez en ciberseguridad, demostrando excelencia en ${strongestDimension.toLowerCase()}. Su postura de seguridad puede servir como referencia para la industria, y está posicionada para liderar innovaciones en el campo de la ciberseguridad. `;
-        }
-        
-        summary += `La implementación sistemática de las recomendaciones específicas por dimensión permitirá fortalecer continuamente la resiliencia cibernética de la organización y proteger efectivamente sus activos críticos de negocio.`;
-        
-        return summary;
+        const sortedByLowest = Object.entries(dimensions)
+            .sort((a, b) => a[1].score - b[1].score)
+            .slice(0, 3)
+            .map(([_, d]) => d.name)
+            .filter(Boolean);
+
+        const topGapsText = sortedByLowest.length > 0
+            ? sortedByLowest.join(', ')
+            : 'las dimensiones evaluadas con menor puntuación';
+
+        const scoreBandText = globalScore < 30
+            ? 'exposición alta con necesidad de estabilización inmediata'
+            : globalScore < 60
+                ? 'exposición moderada con brechas relevantes en procesos críticos'
+                : globalScore < 80
+                    ? 'exposición contenida, con oportunidades de optimización y escalamiento'
+                    : 'exposición reducida y capacidades maduras con foco en excelencia sostenible';
+
+        return `${company} presenta un nivel ${level} de madurez en ciberseguridad con una puntuación global de ${globalScore}%. Esta evaluación posiciona a la organización en un escenario de ${scoreBandText}, lo que exige decisiones ejecutivas orientadas a proteger la continuidad operativa, priorizar inversiones con mayor retorno en reducción de riesgo y fortalecer la capacidad de respuesta ante eventos adversos.
+
+Desde una perspectiva estratégica, la organización muestra fortalezas claras en ${strongestDimension.toLowerCase()}, donde existen prácticas que pueden escalarse como referencia interna para acelerar la mejora en otras áreas. Al mismo tiempo, el principal frente de atención se concentra en ${weakestDimension.toLowerCase()}, junto con ${topGapsText}, debido a su impacto directo en resiliencia, tiempos de recuperación y exposición acumulada frente a incidentes de seguridad.
+
+En el corto plazo (0-3 meses), la prioridad debe centrarse en cerrar brechas de mayor criticidad operativa, establecer controles verificables y reforzar la disciplina de ejecución en los procesos más sensibles. En el mediano plazo (3-12 meses), el foco debe desplazarse hacia la consolidación de capacidades, estandarización de prácticas y medición sistemática mediante indicadores que permitan al comité ejecutivo monitorear avance real y efectividad de las acciones implementadas.
+
+En términos de decisión, se recomienda aprobar una hoja de ruta de mejora por fases, con responsables definidos, hitos trimestrales y seguimiento mensual en comité. Este enfoque permitirá transformar hallazgos en resultados medibles, elevar de forma sostenida el nivel de madurez y asegurar que la organización proteja de manera efectiva sus activos críticos, su reputación institucional y su capacidad de operar con estabilidad en escenarios de riesgo creciente.`;
     }
 
     /**

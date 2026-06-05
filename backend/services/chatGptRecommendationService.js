@@ -346,6 +346,7 @@ class ChatGptRecommendationService {
 
         try {
             const prompt = this.buildExecutiveSummaryPrompt(companyInfo, globalData, dimensionsData);
+            const executiveMaxTokens = Math.max(this.config.maxTokens, 1200);
             
             console.log(`🤖 Generando resumen ejecutivo integrado con ChatGPT...`);
             
@@ -364,7 +365,7 @@ class ChatGptRecommendationService {
                     ],
                     temperature: this.config.temperature,
                     seed: 42,
-                    max_completion_tokens: this.config.maxTokens
+                    max_completion_tokens: executiveMaxTokens
                 }),
                 new Promise((_, reject) => 
                     setTimeout(() => reject(new Error('ChatGPT request timeout')), this.config.timeout)
@@ -399,7 +400,7 @@ class ChatGptRecommendationService {
                             ],
                             temperature: this.config.temperature,
                             seed: 42,
-                            max_completion_tokens: this.config.maxTokens
+                            max_completion_tokens: executiveMaxTokens
                         }),
                         new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('ChatGPT summary expansion timeout')), this.config.timeout)
