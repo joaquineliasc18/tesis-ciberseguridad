@@ -250,7 +250,7 @@ class PDFReportService {
         doc.setTextColor(150, 150, 150);
         doc.setFont('helvetica', 'normal');
         doc.text('Este informe es confidencial y está destinado exclusivamente para uso interno de la organización evaluada.', 105, 280, { align: 'center' });
-        doc.text('Sistema de Evaluación de Ciberseguridad | Powered by NIST CSF 2.0 & OpenAI GPT-4o', 105, 286, { align: 'center' });
+        doc.text('Sistema de Evaluación de Ciberseguridad | Powered by NIST CSF 2.0', 105, 286, { align: 'center' });
 
         return yPos;
     }
