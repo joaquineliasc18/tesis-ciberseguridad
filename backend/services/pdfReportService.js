@@ -35,14 +35,31 @@ class PDFReportService {
     }
 
     /**
+     * Normaliza texto para evitar espacios verticales excesivos en el PDF.
+     */
+    normalizeTextForPdf(text) {
+        if (!text || typeof text !== 'string') return '';
+        return text
+            .replace(/\r\n/g, '\n')
+            .replace(/\n[ \t]+/g, '\n')
+            .replace(/[ \t]+\n/g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
+
+    /**
      * Dibujar texto justificado (alineación de ambos lados)
      */
     drawJustifiedText(doc, text, x, y, maxWidth, lineHeight = 6) {
-        const lines = doc.splitTextToSize(text, maxWidth);
+        const normalizedText = this.normalizeTextForPdf(text);
+        const lines = doc.splitTextToSize(normalizedText, maxWidth);
         
         lines.forEach((line, index) => {
             // No justificar la última línea
             if (index === lines.length - 1) {
+                if (!line || !line.trim()) {
+                    return;
+                }
                 doc.text(line, x, y + (index * lineHeight));
                 return;
             }
@@ -540,9 +557,16 @@ class PDFReportService {
      */
     addTextWithPageBreak(doc, text, x, yPos, fontSize = 10, maxWidth = 170) {
         doc.setFontSize(fontSize);
-        const lines = doc.splitTextToSize(text, maxWidth);
+        const normalizedText = this.normalizeTextForPdf(text);
+        const lines = doc.splitTextToSize(normalizedText, maxWidth);
         
         lines.forEach((line, index) => {
+            if (!line || !line.trim()) {
+                // Mantener un salto controlado para párrafos, evitando huecos excesivos.
+                yPos += 3;
+                return;
+            }
+
             yPos = this.checkPageBreak(doc, yPos, 10);
             
             // No justificar la última línea

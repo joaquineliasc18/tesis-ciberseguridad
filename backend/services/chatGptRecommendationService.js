@@ -607,14 +607,16 @@ DEBE INCLUIR (OBLIGATORIO):
 1. Estado actual y lectura ejecutiva de madurez (${globalScore}% / nivel ${maturityLevel}).
 2. Riesgo principal para negocio y su impacto probable si no se actúa.
 3. Fortalezas aprovechables y brechas críticas con implicación operativa.
-4. 3 prioridades estratégicas ordenadas por impacto y urgencia.
-5. Mensaje final para comité ejecutivo: qué decidir ahora y por qué.
+4. 3 prioridades estratégicas ordenadas por impacto y urgencia, con racional de priorización.
+5. Implicaciones para negocio en horizonte corto (0-3 meses) y medio plazo (3-12 meses).
+6. Estimación cualitativa de exposición (alta/media/baja) en operación, finanzas y reputación.
+7. Mensaje final para comité ejecutivo: qué decidir ahora, por qué y qué resultado esperar.
 
 ESTILO REQUERIDO:
 - Lenguaje claro para audiencia mixta (técnica y no técnica)
 - Si aparece un término técnico, añade explicación simple en la misma oración
 - Profesional, directo y accionable
-- Entre 220-320 palabras
+- Entre 300-420 palabras
 - Sin asteriscos ni formatos especiales
 
 SALIDA:
@@ -775,15 +777,17 @@ FORMATO: Acciones numeradas con [ID], impacto medible, timeframe realista, respo
 METODOLOGÍA:
 1. Declarar puntuación global y nivel de madurez
 2. Identificar dimensión más fuerte (mayor %) y más débil (menor %)
-3. Traducir brechas a riesgo de negocio
-4. Prioridades estratégicas por impacto y urgencia
+3. Traducir brechas a riesgo de negocio (operativo, financiero y reputacional)
+4. Prioridades estratégicas por impacto y urgencia con racional explícito
+5. Definir implicaciones a corto y mediano plazo
+6. Cerrar con decisión ejecutiva recomendada y resultado esperado
 
 ❌ PROHIBIDO:
 - Lenguaje florido o motivacional
 - Referencias genéricas sin datos específicos
 - Asteriscos, emojis o formateo especial
 
-FORMATO: Lenguaje empresarial directo, análisis basado en datos, términos técnicos explicados en simple y cierre con decisiones recomendadas.`;
+FORMATO: Lenguaje empresarial directo, análisis basado en datos, mayor nivel de detalle, términos técnicos explicados en simple y cierre con decisiones recomendadas.`;
     }
 
     /**
