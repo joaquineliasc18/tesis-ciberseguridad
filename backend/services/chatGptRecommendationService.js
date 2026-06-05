@@ -1,6 +1,6 @@
 /**
  * Servicio de Recomendaciones Personalizadas con ChatGPT
- * Genera recomendaciones contextuales de ciberseguridad usando OpenAI GPT-4
+ * Genera recomendaciones contextuales de ciberseguridad usando OpenAI GPT-5
  */
 
 const OpenAI = require('openai');
@@ -15,7 +15,7 @@ class ChatGptRecommendationService {
         });
         
         this.config = {
-            model: process.env.OPENAI_MODEL || 'gpt-4o',
+            model: process.env.OPENAI_MODEL || 'gpt-5',
             maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 1500,
             temperature: process.env.OPENAI_TEMPERATURE !== undefined ? parseFloat(process.env.OPENAI_TEMPERATURE) : 0.0,
             timeout: parseInt(process.env.CHATGPT_TIMEOUT) || 30000
