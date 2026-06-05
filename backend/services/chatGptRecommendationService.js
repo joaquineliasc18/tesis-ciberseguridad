@@ -344,7 +344,7 @@ class ChatGptRecommendationService {
      */
     async generateStrategicNextSteps(companyInfo, globalData, dimensionsData) {
         if (!this.enabled) {
-            throw new Error('ChatGPT recommendations are disabled');
+            return this.generateStrategicNextStepsFallback(companyInfo, globalData, dimensionsData);
         }
 
         try {
@@ -385,8 +385,45 @@ class ChatGptRecommendationService {
 
         } catch (error) {
             console.error(`❌ Error generando próximos pasos ChatGPT:`, error.message);
-            throw error;
+            console.log('⚡ Usando fallback detallado para próximos pasos estratégicos');
+            return this.generateStrategicNextStepsFallback(companyInfo, globalData, dimensionsData);
         }
+    }
+
+    /**
+     * Fallback detallado para próximos pasos estratégicos.
+     */
+    generateStrategicNextStepsFallback(companyInfo, globalData, dimensionsData) {
+        const maturityLevel = globalData?.maturityLevel || 3;
+
+        const sortedDimensions = Object.values(dimensionsData || {})
+            .map(d => ({
+                name: d.name || 'Dimensión',
+                score: typeof d.score === 'number' ? d.score : 0
+            }))
+            .sort((a, b) => a.score - b.score);
+
+        const top3 = sortedDimensions.slice(0, 3);
+        const monthsByMaturity = maturityLevel <= 2 ? '4-6' : maturityLevel === 3 ? '3-5' : '2-4';
+
+        const stepForDimension = (index, dim) => {
+            const action = `Fortalecer la dimensión ${dim.name}`;
+            const detail = `Definir e implementar un plan operativo por fases para cerrar brechas en ${dim.name}, priorizando controles con mayor impacto en reducción de riesgo.`;
+            const scope = `Procesos clave de ${dim.name}, equipos operativos involucrados y responsables de control.`;
+            const example = `Por ejemplo, iniciar con un piloto en el proceso con mayor exposición y luego escalar al resto del área.`;
+            const value = `Disminución de exposición en ${dim.name} y mejora de trazabilidad para auditoría y comité ejecutivo.`;
+            return `${index}. ${action}: ${detail} Timeframe: ${monthsByMaturity} meses. Alcance: ${scope} Ejemplo: ${example} Valor esperado: ${value}`;
+        };
+
+        const lines = [
+            stepForDimension(1, top3[0] || { name: 'prioritaria 1', score: 0 }),
+            stepForDimension(2, top3[1] || { name: 'prioritaria 2', score: 0 }),
+            stepForDimension(3, top3[2] || { name: 'prioritaria 3', score: 0 }),
+            `4. Ejecutar capacitación aplicada y simulaciones dirigidas: Implementar entrenamiento práctico orientado a los riesgos actuales detectados, con énfasis en decisiones operativas y respuesta coordinada. Timeframe: ${monthsByMaturity} meses. Alcance: Equipos técnicos, dueños de proceso y líderes de área. Ejemplo: Simulacros trimestrales con escenarios reales de incidente y lecciones aprendidas. Valor esperado: Reducción del error operativo y mayor velocidad de respuesta.`,
+            `5. Institucionalizar seguimiento ejecutivo y mejora continua: Establecer una rutina mensual de revisión con indicadores, desvíos y acciones correctivas para sostener avances. Timeframe: ${monthsByMaturity} meses. Alcance: Comité de riesgo, seguridad y gerencias clave. Ejemplo: Tablero con KPIs (cobertura de controles, tiempo de remediación y brechas críticas abiertas). Valor esperado: Gobierno continuo de ciberseguridad y avance estable del nivel de madurez.`
+        ];
+
+        return lines.join('\n');
     }
 
     /**

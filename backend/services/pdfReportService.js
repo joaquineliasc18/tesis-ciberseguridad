@@ -57,8 +57,8 @@ class PDFReportService {
             // Evitar estiramiento excesivo cuando hay pocas palabras o línea corta.
             const lineWidth = doc.getTextWidth(line);
             const fillRatio = lineWidth / maxWidth;
-            const minWordsToJustify = 5;
-            const minFillRatioToJustify = 0.72;
+            const minWordsToJustify = 6;
+            const minFillRatioToJustify = 0.82;
             if (words.length < minWordsToJustify || fillRatio < minFillRatioToJustify) {
                 doc.text(line, x, y + (index * lineHeight));
                 return;
@@ -73,6 +73,14 @@ class PDFReportService {
             // Calcular espaciado entre palabras
             const totalGap = maxWidth - totalWordsWidth;
             const gapBetweenWords = totalGap / (words.length - 1);
+
+            // Evitar separación visual extrema entre palabras.
+            const baseSpaceWidth = doc.getTextWidth(' ');
+            const maxGapMultiplier = 3.5;
+            if (gapBetweenWords > (baseSpaceWidth * maxGapMultiplier)) {
+                doc.text(line, x, y + (index * lineHeight));
+                return;
+            }
             
             // Dibujar cada palabra con el espaciado calculado
             let currentX = x;
@@ -551,6 +559,17 @@ class PDFReportService {
                 yPos += 6;
                 return;
             }
+
+            // Evitar justificación exagerada en líneas cortas o con pocas palabras.
+            const lineWidth = doc.getTextWidth(line);
+            const fillRatio = lineWidth / maxWidth;
+            const minWordsToJustify = 6;
+            const minFillRatioToJustify = 0.82;
+            if (words.length < minWordsToJustify || fillRatio < minFillRatioToJustify) {
+                doc.text(line, x, yPos);
+                yPos += 6;
+                return;
+            }
             
             // Calcular ancho total de las palabras
             let totalWordsWidth = 0;
@@ -561,6 +580,15 @@ class PDFReportService {
             // Calcular espaciado entre palabras
             const totalGap = maxWidth - totalWordsWidth;
             const gapBetweenWords = totalGap / (words.length - 1);
+
+            // Si la separación es excesiva, usar alineación normal para mantener legibilidad.
+            const baseSpaceWidth = doc.getTextWidth(' ');
+            const maxGapMultiplier = 3.5;
+            if (gapBetweenWords > (baseSpaceWidth * maxGapMultiplier)) {
+                doc.text(line, x, yPos);
+                yPos += 6;
+                return;
+            }
             
             // Dibujar cada palabra con el espaciado calculado
             let currentX = x;
