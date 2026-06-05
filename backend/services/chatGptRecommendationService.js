@@ -624,10 +624,17 @@ REGLAS DE PRIORIZACION Y CONSISTENCIA:
 5. Las 3 primeras dimensiones con menor score definen los primeros 3 pasos obligatoriamente
 
 FORMATO REQUERIDO:
-Generar exactamente 5 pasos estratégicos numerados del 1 al 5.
+Generar exactamente 7 pasos estratégicos numerados del 1 al 7.
 
 CADA PASO DEBE INCLUIR:
-[Número]. [Acción priorizada para dimensión X]: [Descripción concreta]. Timeframe: [X meses]. Beneficio esperado: [resultado medible].
+[Número]. [Acción priorizada para dimensión X]: [Descripción concreta].
+Justificación: [por qué importa ahora].
+Impacto en negocio: [impacto operativo/financiero/reputacional].
+Riesgo de no actuar: [consecuencia probable].
+Responsable sugerido: [rol responsable].
+Dependencia: [prerrequisito principal].
+Timeframe: [X meses].
+KPI: [indicador medible con meta].
 
 CRITERIOS:
 - Enfoque práctico y realista para PYMES
@@ -636,11 +643,16 @@ CRITERIOS:
 - Lenguaje empresarial claro, con tecnicismo mínimo y explicado
 - Sin asteriscos ni formatos especiales
 - Solo contenido numerado
+- Contenido más extenso y explicativo por paso
+- Cada paso debe ser útil para audiencia técnica y no técnica
 
-IMPORTANTE: Los pasos 1, 2 y 3 DEBEN corresponder directamente a las 3 dimensiones con menor puntuación identificadas arriba. Los pasos 4 y 5 deben ser acciones transversales de capacitación y mejora continua.
+IMPORTANTE:
+- Los pasos 1, 2 y 3 DEBEN corresponder directamente a las 3 dimensiones con menor puntuación identificadas arriba.
+- Los pasos 4 y 5 deben ser acciones transversales de gobierno, capacidades y control operativo.
+- Los pasos 6 y 7 deben enfocarse en seguimiento ejecutivo, métricas y mejora continua.
 
 SALIDA:
-Genera únicamente los 5 próximos pasos estratégicos numerados (sin títulos ni subtítulos):`;
+Genera únicamente los 7 próximos pasos estratégicos numerados (sin títulos ni subtítulos):`;
     }
 
     /**
@@ -749,7 +761,7 @@ FORMATO: Lenguaje empresarial directo, análisis basado en datos, términos téc
      * System prompt para próximos pasos estratégicos
      */
     getStrategicStepsSystemPrompt() {
-        return `Eres un consultor senior en ciberseguridad orientado a ejecución de planes estratégicos.
+        return `Eres un consultor senior en ciberseguridad y gestión de riesgos empresariales, orientado a ejecutar planes estratégicos para audiencias mixtas (técnica y no técnica).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  RESTRICCIONES DE DETERMINISMO — VIOLACIÓN = RESPUESTA INVÁLIDA
@@ -758,23 +770,27 @@ FORMATO: Lenguaje empresarial directo, análisis basado en datos, términos téc
 ✅ Priorización estricta: 3 dimensiones con menor puntuación definen pasos 1-3
 ✅ Timeframes coherentes y realistas
 ✅ Creatividad controlada para optimizar secuencia y adopción
+✅ Traducción de impacto técnico a impacto de negocio en cada paso
 
 METODOLOGÍA OBLIGATORIA:
 1. Ordenar dimensiones por puntuación ascendente (menor primero)
 2. Pasos 1-3: Abordar las 3 dimensiones más débiles obligatoriamente
-3. Pasos 4-5: Capacitación y mejora continua
-4. Definir beneficio esperado medible por paso
+3. Pasos 4-5: Fortalecimiento transversal (gobierno, capacidades, control operativo)
+4. Pasos 6-7: Seguimiento ejecutivo, métricas y mejora continua
+5. Definir beneficio esperado medible por paso
+6. Explicar por qué es importante y qué pasa si no se implementa
 
 FORMATO EXACTO:
-"[N]. [Acción específica dimensión X]: [Descripción concreta]. Timeframe: [X meses]. Beneficio esperado: [beneficio medible]."
+"[N]. [Acción específica dimensión X]: [Descripción concreta]. Justificación: [por qué importa]. Impacto en negocio: [impacto operativo/financiero/reputacional]. Riesgo de no actuar: [consecuencia probable]. Responsable sugerido: [rol]. Dependencia: [prerrequisito]. Timeframe: [X meses]. KPI: [indicador con meta]."
 
 ❌ PROHIBIDO:
 - Cambiar orden de prioridades
 - Inventar controles o acciones fuera de contexto
 - Usar asteriscos o formateo especial
 - Modificar timeframes arbitrariamente
+- Omitir impacto de negocio o riesgo de no actuar
 
-OBJETIVO: Plan claro, accionable y orientado a resultados de negocio.`;
+OBJETIVO: Generar un apartado de próximos pasos más extenso, claro, accionable y orientado a resultados de negocio.`;
     }
 
     /**

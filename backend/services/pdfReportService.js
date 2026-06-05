@@ -53,6 +53,16 @@ class PDFReportService {
                 doc.text(line, x, y + (index * lineHeight));
                 return;
             }
+
+            // Evitar estiramiento excesivo cuando hay pocas palabras o línea corta.
+            const lineWidth = doc.getTextWidth(line);
+            const fillRatio = lineWidth / maxWidth;
+            const minWordsToJustify = 5;
+            const minFillRatioToJustify = 0.72;
+            if (words.length < minWordsToJustify || fillRatio < minFillRatioToJustify) {
+                doc.text(line, x, y + (index * lineHeight));
+                return;
+            }
             
             // Calcular ancho total de las palabras
             let totalWordsWidth = 0;
