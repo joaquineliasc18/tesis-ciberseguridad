@@ -371,10 +371,49 @@ class ChatGptRecommendationService {
                 )
             ]);
 
-            const summary = completion.choices[0]?.message?.content?.trim();
+            let summary = completion.choices[0]?.message?.content?.trim();
             
             if (!summary) {
                 throw new Error('Empty executive summary from ChatGPT');
+            }
+
+            // Reforzar detalle y calidad narrativa si el resumen queda corto.
+            const minWords = 340;
+            const words = this.countWords(summary);
+            if (words < minWords) {
+                console.log(`⚠️ Resumen ejecutivo corto (${words} palabras). Reintentando expansión experta...`);
+
+                try {
+                    const expandCompletion = await Promise.race([
+                        this.openai.chat.completions.create({
+                            model: this.config.model,
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: this.getExecutiveSummarySystemPrompt()
+                                },
+                                {
+                                    role: "user",
+                                    content: `${prompt}\n\nLa versión previa fue demasiado breve. Reescribe el resumen con redacción experta, profundidad ejecutiva y coherencia narrativa, manteniendo claridad para audiencia mixta.\n\nRequisitos obligatorios:\n- Longitud entre 360 y 520 palabras\n- Mayor desarrollo de contexto, implicaciones y decisiones\n- Mantener enfoque en negocio y riesgos\n- Evitar relleno y repeticiones\n\nTexto previo:\n${summary}`
+                                }
+                            ],
+                            temperature: this.config.temperature,
+                            seed: 42,
+                            max_completion_tokens: this.config.maxTokens
+                        }),
+                        new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('ChatGPT summary expansion timeout')), this.config.timeout)
+                        )
+                    ]);
+
+                    const expandedSummary = expandCompletion.choices[0]?.message?.content?.trim();
+                    if (expandedSummary && this.countWords(expandedSummary) >= minWords) {
+                        summary = expandedSummary;
+                        console.log(`✅ Resumen ejecutivo expandido (${this.countWords(summary)} palabras)`);
+                    }
+                } catch (expandError) {
+                    console.log(`⚠️ No se pudo expandir el resumen ejecutivo, se usa versión original (${words} palabras)`);
+                }
             }
 
             console.log(`✅ Resumen ejecutivo ChatGPT generado (${summary.length} caracteres)`);
@@ -658,12 +697,15 @@ DEBE INCLUIR (OBLIGATORIO):
 5. Implicaciones para negocio en horizonte corto (0-3 meses) y medio plazo (3-12 meses).
 6. Estimación cualitativa de exposición (alta/media/baja) en operación, finanzas y reputación.
 7. Mensaje final para comité ejecutivo: qué decidir ahora, por qué y qué resultado esperar.
+8. Redacción fluida en 4-6 párrafos conectados (no bullets), con hilo narrativo claro de situación -> riesgo -> prioridad -> decisión.
+9. Incluir al menos 2 insights estratégicos no obvios, siempre sustentados por los datos evaluados.
 
 ESTILO REQUERIDO:
 - Lenguaje claro para audiencia mixta (técnica y no técnica)
 - Si aparece un término técnico, añade explicación simple en la misma oración
+- Redacción experta, elegante y precisa para comité ejecutivo
 - Profesional, directo y accionable
-- Entre 300-420 palabras
+- Entre 360-520 palabras
 - Sin asteriscos ni formatos especiales
 
 SALIDA:
@@ -829,13 +871,14 @@ METODOLOGÍA:
 4. Prioridades estratégicas por impacto y urgencia con racional explícito
 5. Definir implicaciones a corto y mediano plazo
 6. Cerrar con decisión ejecutiva recomendada y resultado esperado
+7. Mantener fluidez narrativa, densidad analítica y claridad para no técnicos
 
 ❌ PROHIBIDO:
 - Lenguaje florido o motivacional
 - Referencias genéricas sin datos específicos
 - Asteriscos, emojis o formateo especial
 
-FORMATO: Lenguaje empresarial directo, análisis basado en datos, mayor nivel de detalle, términos técnicos explicados en simple y cierre con decisiones recomendadas.`;
+FORMATO: Lenguaje empresarial directo, análisis basado en datos, alta calidad de redacción, mayor nivel de detalle, términos técnicos explicados en simple y cierre con decisiones recomendadas.`;
     }
 
     /**
