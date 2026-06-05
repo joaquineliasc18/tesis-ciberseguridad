@@ -600,7 +600,7 @@ Genera únicamente el contenido del resumen ejecutivo (sin títulos ni subtítul
             maximum: data.maximum
         })).sort((a, b) => a.score - b.score); // Ordenar por menor score (mayor oportunidad)
 
-        return `PROXIMOS PASOS ESTRATEGICOS DE CIBERSEGURIDAD
+        return `PLANIFICACIÓN ESTRATÉGICA DE CIBERSEGURIDAD - PRÓXIMOS PASOS
 
 CONTEXTO EMPRESARIAL:
 - Organización: ${companyName}
@@ -616,25 +616,18 @@ Avanzar del nivel ${maturityLevel} al nivel ${Math.min(maturityLevel + 1, 5)} en
 ROL Y OBJETIVO:
 Como asesor de riesgo cibernético, define un plan ejecutivo de implementación para ${companyName} con foco en reducción de riesgo real y rapidez de adopción.
 
-REGLAS DE PRIORIZACION Y CONSISTENCIA:
+REGLAS DE CONSISTENCIA ESTRICTAS:
 1. Los pasos DEBEN priorizarse EXCLUSIVAMENTE según las dimensiones con menor puntuación (en orden ascendente)
-2. Para las mismas puntuaciones, conserva misma estructura y orden de prioridad
-3. Los timeframes deben ser coherentes: baja madurez (4-6 meses), media (3-5), alta (2-4)
+2. Para las mismas puntuaciones, DEBES generar los mismos pasos en el mismo orden de prioridad
+3. Los timeframes DEBEN ser consistentes: baja madurez (4-6 meses), media madurez (3-5 meses), alta madurez (2-4 meses)
 4. Permite creatividad controlada solo para optimizar secuencia y quick wins, sin salir del contexto
 5. Las 3 primeras dimensiones con menor score definen los primeros 3 pasos obligatoriamente
 
 FORMATO REQUERIDO:
-Generar exactamente 7 pasos estratégicos numerados del 1 al 7.
+Generar exactamente 5 pasos estratégicos numerados del 1 al 5.
 
 CADA PASO DEBE INCLUIR:
-[Número]. [Acción priorizada para dimensión X]: [Descripción concreta].
-Justificación: [por qué importa ahora].
-Impacto en negocio: [impacto operativo/financiero/reputacional].
-Riesgo de no actuar: [consecuencia probable].
-Responsable sugerido: [rol responsable].
-Dependencia: [prerrequisito principal].
-Timeframe: [X meses].
-KPI: [indicador medible con meta].
+[Número]. [Acción específica para mejorar dimensión X]: [Descripción concreta y explicada en lenguaje ejecutivo]. Timeframe: [X meses]. Alcance: [áreas/procesos impactados]. Ejemplo: [caso práctico breve de implementación]. Valor esperado: [beneficio medible y específico].
 
 CRITERIOS:
 - Enfoque práctico y realista para PYMES
@@ -643,16 +636,15 @@ CRITERIOS:
 - Lenguaje empresarial claro, con tecnicismo mínimo y explicado
 - Sin asteriscos ni formatos especiales
 - Solo contenido numerado
-- Contenido más extenso y explicativo por paso
-- Cada paso debe ser útil para audiencia técnica y no técnica
+- Cada paso debe tener mayor detalle explicativo sin perder claridad
+- Cada paso debe ser comprensible para audiencia técnica y no técnica
 
 IMPORTANTE:
 - Los pasos 1, 2 y 3 DEBEN corresponder directamente a las 3 dimensiones con menor puntuación identificadas arriba.
-- Los pasos 4 y 5 deben ser acciones transversales de gobierno, capacidades y control operativo.
-- Los pasos 6 y 7 deben enfocarse en seguimiento ejecutivo, métricas y mejora continua.
+- Los pasos 4 y 5 deben ser acciones transversales de capacitación, seguimiento y mejora continua.
 
 SALIDA:
-Genera únicamente los 7 próximos pasos estratégicos numerados (sin títulos ni subtítulos):`;
+Genera ÚNICAMENTE los 5 próximos pasos estratégicos numerados (sin títulos ni subtítulos):`;
     }
 
     /**
@@ -761,7 +753,7 @@ FORMATO: Lenguaje empresarial directo, análisis basado en datos, términos téc
      * System prompt para próximos pasos estratégicos
      */
     getStrategicStepsSystemPrompt() {
-        return `Eres un consultor senior en ciberseguridad y gestión de riesgos empresariales, orientado a ejecutar planes estratégicos para audiencias mixtas (técnica y no técnica).
+        return `Eres un consultor senior en ciberseguridad orientado a ejecución de planes estratégicos para audiencias mixtas (técnica y no técnica).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  RESTRICCIONES DE DETERMINISMO — VIOLACIÓN = RESPUESTA INVÁLIDA
@@ -769,28 +761,26 @@ FORMATO: Lenguaje empresarial directo, análisis basado en datos, términos téc
 
 ✅ Priorización estricta: 3 dimensiones con menor puntuación definen pasos 1-3
 ✅ Timeframes coherentes y realistas
-✅ Creatividad controlada para optimizar secuencia y adopción
-✅ Traducción de impacto técnico a impacto de negocio en cada paso
+✅ Creatividad controlada para enriquecer detalle, alcance y ejemplos
 
 METODOLOGÍA OBLIGATORIA:
 1. Ordenar dimensiones por puntuación ascendente (menor primero)
 2. Pasos 1-3: Abordar las 3 dimensiones más débiles obligatoriamente
-3. Pasos 4-5: Fortalecimiento transversal (gobierno, capacidades, control operativo)
-4. Pasos 6-7: Seguimiento ejecutivo, métricas y mejora continua
-5. Definir beneficio esperado medible por paso
-6. Explicar por qué es importante y qué pasa si no se implementa
+3. Pasos 4-5: Capacitación, seguimiento y mejora continua
+4. Mantener cada paso con explicación clara, periodo, alcance y ejemplo
+5. Definir valor esperado medible por paso
 
 FORMATO EXACTO:
-"[N]. [Acción específica dimensión X]: [Descripción concreta]. Justificación: [por qué importa]. Impacto en negocio: [impacto operativo/financiero/reputacional]. Riesgo de no actuar: [consecuencia probable]. Responsable sugerido: [rol]. Dependencia: [prerrequisito]. Timeframe: [X meses]. KPI: [indicador con meta]."
+"[N]. [Acción específica dimensión X]: [Descripción concreta y explicada]. Timeframe: [X meses]. Alcance: [áreas/procesos impactados]. Ejemplo: [caso práctico breve]. Valor esperado: [beneficio medible]."
 
 ❌ PROHIBIDO:
 - Cambiar orden de prioridades
 - Inventar controles o acciones fuera de contexto
 - Usar asteriscos o formateo especial
 - Modificar timeframes arbitrariamente
-- Omitir impacto de negocio o riesgo de no actuar
+- Omitir periodo, alcance o ejemplo en cada paso
 
-OBJETIVO: Generar un apartado de próximos pasos más extenso, claro, accionable y orientado a resultados de negocio.`;
+OBJETIVO: Generar 5 próximos pasos estratégicos detallados, claros, accionables y orientados a resultados de negocio.`;
     }
 
     /**
