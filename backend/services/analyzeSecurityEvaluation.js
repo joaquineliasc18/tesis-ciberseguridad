@@ -529,10 +529,12 @@ class SecurityEvaluationAnalyzer {
                 // Si ChatGPT generó recomendación para esta dimensión, usarla
                 if (chatGptRecommendations[dimension] && chatGptRecommendations[dimension].recommendation) {
                     console.log(`✅ Usando recomendación ChatGPT para ${dimension}`);
+                    const baseRecommendation = this.generateFallbackRecommendation(dimension, dimensionData, dimensionQuestions);
                     const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
                         chatGptRecommendations[dimension].recommendation,
                         dimensionData,
-                        dimensionQuestions
+                        dimensionQuestions,
+                        baseRecommendation
                     );
                     finalRecommendations[dimension] = {
                         ...chatGptRecommendations[dimension],
@@ -546,7 +548,8 @@ class SecurityEvaluationAnalyzer {
                     const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
                         fallbackRecommendation,
                         dimensionData,
-                        dimensionQuestions
+                        dimensionQuestions,
+                        fallbackRecommendation
                     );
                     finalRecommendations[dimension] = {
                         score: dimensionData.score,
@@ -601,7 +604,8 @@ class SecurityEvaluationAnalyzer {
             const enrichedRecommendation = this.ensureDetailedDimensionRecommendation(
                 fallbackRecommendation,
                 dimensionData,
-                dimensionQuestions
+                dimensionQuestions,
+                fallbackRecommendation
             );
             
             dimensionRecommendations[dimension] = {
@@ -626,8 +630,8 @@ class SecurityEvaluationAnalyzer {
     /**
      * Asegurar detalle mínimo uniforme en recomendaciones por dimensión.
      */
-    ensureDetailedDimensionRecommendation(recommendation, dimensionData, dimensionQuestions) {
-        const minWords = 120;
+    ensureDetailedDimensionRecommendation(recommendation, dimensionData, dimensionQuestions, baseRecommendation = '') {
+        const minWords = 170;
         const currentWords = this.countWords(recommendation);
 
         if (currentWords >= minWords) {
@@ -641,9 +645,16 @@ class SecurityEvaluationAnalyzer {
             ? categoryList.join(', ')
             : 'procesos críticos de la dimensión evaluada';
 
+        const diagnosticText = `Diagnóstico ejecutivo: con una puntuación de ${score}%, esta dimensión requiere consolidar capacidades para reducir exposición operativa y sostener mejoras en la madurez global.`;
+
+        // Reutilizar la base histórica de recomendaciones para mantener la riqueza de contenido previa.
+        const baseText = baseRecommendation && this.countWords(baseRecommendation) > this.countWords(recommendation)
+            ? ` ${baseRecommendation}`
+            : '';
+
         const detailBlock = ` En términos de ejecución, se recomienda estructurar esta mejora en un plan por fases con horizonte de ${timeframe}, iniciando por los controles de mayor impacto en reducción de riesgo y continuidad operativa. El alcance debe cubrir ${alcance}, con responsables definidos por proceso y seguimiento quincenal de avances para asegurar resultados sostenibles. Como ejemplo práctico, puede iniciarse con un piloto controlado en el área de mayor exposición, validar resultados en 30 días y luego escalar progresivamente al resto de la organización. El valor esperado es una mejora medible en madurez, mayor trazabilidad para auditoría y reducción del riesgo residual.`;
 
-        return `${recommendation}${detailBlock}`;
+        return `${recommendation} ${diagnosticText}${baseText}${detailBlock}`.replace(/\s+/g, ' ').trim();
     }
 
     /**
