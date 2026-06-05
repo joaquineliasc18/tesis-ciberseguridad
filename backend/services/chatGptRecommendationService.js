@@ -99,6 +99,11 @@ class ChatGptRecommendationService {
         }
     }
 
+    countWords(text) {
+        if (!text || typeof text !== 'string') return 0;
+        return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
     /**
      * Generar recomendación personalizada para una dimensión específica
      */
@@ -144,12 +149,54 @@ class ChatGptRecommendationService {
             ]);
 
             const rawContent = completion.choices[0]?.message?.content;
-            const recommendation = Array.isArray(rawContent)
+            let recommendation = Array.isArray(rawContent)
                 ? rawContent.map(b => b.text || '').join('').trim()
                 : (rawContent || '').trim();
 
             if (!recommendation) {
                 throw new Error('Empty response from ChatGPT');
+            }
+
+            // Uniformar tamaño entre dimensiones: si queda corto, pedir expansión controlada.
+            const minWords = 180;
+            const currentWords = this.countWords(recommendation);
+            if (currentWords < minWords) {
+                console.log(`⚠️ Recomendación corta en ${dimension} (${currentWords} palabras). Reintentando expansión...`);
+                try {
+                    const expandCompletion = await Promise.race([
+                        this.openai.chat.completions.create({
+                            model: this.config.model,
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: this.getSystemPrompt()
+                                },
+                                {
+                                    role: "user",
+                                    content: `${prompt}\n\nLa respuesta generada fue demasiado breve para el estándar del informe. Reescribe la recomendación para ${dimension} con longitud uniforme entre 190 y 250 palabras, manteniendo claridad ejecutiva, acción concreta y referencias [ID] del KB.\n\nRespuesta corta anterior:\n${recommendation}`
+                                }
+                            ],
+                            temperature: this.config.temperature,
+                            seed: 42,
+                            max_completion_tokens: this.config.maxTokens
+                        }),
+                        new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('ChatGPT expansion timeout')), this.config.timeout)
+                        )
+                    ]);
+
+                    const expandedRaw = expandCompletion.choices[0]?.message?.content;
+                    const expandedRecommendation = Array.isArray(expandedRaw)
+                        ? expandedRaw.map(b => b.text || '').join('').trim()
+                        : (expandedRaw || '').trim();
+
+                    if (expandedRecommendation && this.countWords(expandedRecommendation) >= minWords) {
+                        recommendation = expandedRecommendation;
+                        console.log(`✅ Recomendación expandida en ${dimension} (${this.countWords(recommendation)} palabras)`);
+                    }
+                } catch (expandError) {
+                    console.log(`⚠️ No se pudo expandir ${dimension}, se usa versión original (${currentWords} palabras)`);
+                }
             }
 
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -495,7 +542,7 @@ ESTILO REQUERIDO:
 - Lenguaje ejecutivo claro, profesional y natural
 - Menos jerga técnica; cada término técnico debe explicarse en lenguaje simple
 - Accionable y priorizado
-- Entre 180-260 palabras
+- Longitud uniforme entre 190-250 palabras para TODAS las dimensiones
 - Sin asteriscos ni encabezados extras
 
 SALIDA:
@@ -717,6 +764,7 @@ FORMATO REQUERIDO:
 - Lenguaje profesional claro y entendible para negocio
 - Breve explicación de términos técnicos cuando aparezcan
 - Beneficios medibles cuando sea posible
+- Longitud relativamente uniforme por dimensión (evitar respuestas demasiado cortas)
 
 ESTRUCTURA DE RECOMENDACIÓN:
 1. Diagnóstico breve del nivel actual

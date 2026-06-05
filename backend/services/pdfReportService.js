@@ -43,7 +43,7 @@ class PDFReportService {
             .replace(/\r\n/g, '\n')
             .replace(/\n[ \t]+/g, '\n')
             .replace(/[ \t]+\n/g, '\n')
-            .replace(/\n{3,}/g, '\n\n')
+            .replace(/\n{2,}/g, '\n')
             .trim();
     }
 
@@ -557,13 +557,14 @@ class PDFReportService {
      */
     addTextWithPageBreak(doc, text, x, yPos, fontSize = 10, maxWidth = 170) {
         doc.setFontSize(fontSize);
+        const lineHeight = Math.max(4.8, fontSize * 0.5);
         const normalizedText = this.normalizeTextForPdf(text);
         const lines = doc.splitTextToSize(normalizedText, maxWidth);
         
         lines.forEach((line, index) => {
             if (!line || !line.trim()) {
                 // Mantener un salto controlado para párrafos, evitando huecos excesivos.
-                yPos += 3;
+                yPos += Math.max(2, lineHeight * 0.45);
                 return;
             }
 
@@ -572,7 +573,7 @@ class PDFReportService {
             // No justificar la última línea
             if (index === lines.length - 1) {
                 doc.text(line, x, yPos);
-                yPos += 6;
+                yPos += lineHeight;
                 return;
             }
             
@@ -580,7 +581,7 @@ class PDFReportService {
             const words = line.split(' ').filter(w => w.length > 0);
             if (words.length <= 1) {
                 doc.text(line, x, yPos);
-                yPos += 6;
+                yPos += lineHeight;
                 return;
             }
 
@@ -591,7 +592,7 @@ class PDFReportService {
             const minFillRatioToJustify = 0.82;
             if (words.length < minWordsToJustify || fillRatio < minFillRatioToJustify) {
                 doc.text(line, x, yPos);
-                yPos += 6;
+                yPos += lineHeight;
                 return;
             }
             
@@ -610,7 +611,7 @@ class PDFReportService {
             const maxGapMultiplier = 3.5;
             if (gapBetweenWords > (baseSpaceWidth * maxGapMultiplier)) {
                 doc.text(line, x, yPos);
-                yPos += 6;
+                yPos += lineHeight;
                 return;
             }
             
@@ -621,7 +622,7 @@ class PDFReportService {
                 currentX += doc.getTextWidth(word) + gapBetweenWords;
             });
             
-            yPos += 6;
+            yPos += lineHeight;
         });
         
         return yPos;
