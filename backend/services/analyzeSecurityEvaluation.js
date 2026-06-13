@@ -628,15 +628,31 @@ class SecurityEvaluationAnalyzer {
     }
 
     /**
+     * Mejorar legibilidad ejecutiva de términos técnicos comunes.
+     */
+    simplifyTechnicalTerms(text) {
+        if (!text || typeof text !== 'string') return '';
+
+        return text
+            .replace(/\bMFA\b/g, 'MFA (autenticación multifactor)')
+            .replace(/\bzero-trust\b/gi, 'zero-trust (modelo de confianza cero)')
+            .replace(/\bthreat intelligence\b/gi, 'inteligencia de amenazas')
+            .replace(/\bplaybooks\b/gi, 'playbooks (guías operativas de respuesta)')
+            .replace(/\bSOC\b/g, 'SOC (centro de operaciones de seguridad)')
+            .replace(/\bKPIs\b/g, 'KPIs (indicadores clave de desempeño)')
+            .replace(/\bKPI\b/g, 'KPI (indicador clave de desempeño)')
+            .replace(/\borquestad[ao]s?\b/gi, 'coordinados de forma automática')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    /**
      * Asegurar detalle mínimo uniforme en recomendaciones por dimensión.
      */
     ensureDetailedDimensionRecommendation(recommendation, dimensionData, dimensionQuestions, baseRecommendation = '') {
-        const minWords = 170;
-        const currentWords = this.countWords(recommendation);
-
-        if (currentWords >= minWords) {
-            return recommendation;
-        }
+        const minWords = 220;
+        let normalizedRecommendation = this.simplifyTechnicalTerms(recommendation);
+        const currentWords = this.countWords(normalizedRecommendation);
 
         const score = dimensionData?.score ?? 0;
         const timeframe = score < 25 ? '4-6 meses' : score < 50 ? '3-5 meses' : '2-4 meses';
@@ -649,12 +665,21 @@ class SecurityEvaluationAnalyzer {
 
         // Reutilizar la base histórica de recomendaciones para mantener la riqueza de contenido previa.
         const baseText = baseRecommendation && this.countWords(baseRecommendation) > this.countWords(recommendation)
-            ? ` ${baseRecommendation}`
+            ? ` ${this.simplifyTechnicalTerms(baseRecommendation)}`
             : '';
 
         const detailBlock = ` En términos de ejecución, se recomienda estructurar esta mejora en un plan por fases con horizonte de ${timeframe}, iniciando por los controles de mayor impacto en reducción de riesgo y continuidad operativa. El alcance debe cubrir ${alcance}, con responsables definidos por proceso y seguimiento quincenal de avances para asegurar resultados sostenibles. Como ejemplo práctico, puede iniciarse con un piloto controlado en el área de mayor exposición, validar resultados en 30 días y luego escalar progresivamente al resto de la organización. El valor esperado es una mejora medible en madurez, mayor trazabilidad para auditoría y reducción del riesgo residual.`;
+        const governanceBlock = ` Para asegurar continuidad, se sugiere establecer un responsable de seguimiento por dimensión, realizar revisiones mensuales con evidencias verificables y reportar el avance al comité directivo con un KPI de cumplimiento y un KPI de reducción de brechas.`;
 
-        return `${recommendation} ${diagnosticText}${baseText}${detailBlock}`.replace(/\s+/g, ' ').trim();
+        if (currentWords >= minWords) {
+            // Aunque cumpla longitud, reforzar estructura y claridad cuando falte contexto de ejecución.
+            if (!/Timeframe:|Alcance:|Valor esperado:/i.test(normalizedRecommendation)) {
+                normalizedRecommendation = `${normalizedRecommendation} ${diagnosticText}${detailBlock}${governanceBlock}`;
+            }
+            return normalizedRecommendation.replace(/\s+/g, ' ').trim();
+        }
+
+        return `${normalizedRecommendation} ${diagnosticText}${baseText}${detailBlock}${governanceBlock}`.replace(/\s+/g, ' ').trim();
     }
 
     /**
