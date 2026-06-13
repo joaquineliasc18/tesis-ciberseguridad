@@ -314,6 +314,40 @@ body {
   border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
+/* Cards de dimensiones en modal de evaluación */
+.dimension-single-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dimension-recommendation-line {
+  min-width: 0;
+}
+
+.recommendation-preview-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.recommendation-more-link {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.recommendation-more-link:hover {
+  text-decoration: underline;
+}
+
+.recommendation-full-text {
+  line-height: 1.7;
+  color: var(--text-dark);
+  white-space: pre-line;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .container {

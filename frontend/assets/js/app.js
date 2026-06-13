@@ -674,6 +674,8 @@ class FileManagementApp {
      * Mostrar modal con detalles de evaluación
      */
     showEvaluationModal(data) {
+        this.currentEvaluationData = data.evaluation || null;
+
         // Crear modal dinámicamente con diseño ejecutivo mejorado
         const modalHtml = `
             <div class="modal fade" id="evaluationModal" tabindex="-1">
@@ -722,6 +724,97 @@ class FileManagementApp {
 
         // Remover modal del DOM cuando se cierre
         document.getElementById('evaluationModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
+    }
+
+    /**
+     * Obtener recomendación completa por dimensión
+     */
+    getDimensionRecommendationText(evaluation, dimensionKey, index) {
+        const fromDimensionRecommendations = evaluation?.dimensionRecommendations?.[dimensionKey]?.recommendation;
+        if (fromDimensionRecommendations && typeof fromDimensionRecommendations === 'string') {
+            return fromDimensionRecommendations.trim();
+        }
+
+        if (Array.isArray(evaluation?.recommendations) && typeof evaluation.recommendations[index] === 'string') {
+            return evaluation.recommendations[index].trim();
+        }
+
+        return '';
+    }
+
+    /**
+     * Generar preview en una sola línea para recomendación
+     */
+    getRecommendationPreview(text, maxLength = 120) {
+        if (!text) {
+            return '';
+        }
+
+        const cleanText = text.replace(/\s+/g, ' ').trim();
+        if (cleanText.length <= maxLength) {
+            return cleanText;
+        }
+
+        return `${cleanText.slice(0, maxLength).trim()}...`;
+    }
+
+    /**
+     * Mostrar modal secundario con recomendación completa
+     */
+    showRecommendationModal(dimensionKey) {
+        if (!this.currentEvaluationData || !this.currentEvaluationData.scores) {
+            return;
+        }
+
+        const entries = Object.entries(this.currentEvaluationData.scores);
+        const index = entries.findIndex(([key]) => key === dimensionKey);
+        if (index === -1) {
+            return;
+        }
+
+        const [key, dimension] = entries[index];
+        const recommendation = this.getDimensionRecommendationText(this.currentEvaluationData, key, index);
+
+        if (!recommendation) {
+            Toast.info('No hay recomendación detallada disponible para esta dimensión todavía.');
+            return;
+        }
+
+        const existingModal = document.getElementById('dimensionRecommendationModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const detailModalHtml = `
+            <div class="modal fade" id="dimensionRecommendationModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                Recomendación - ${this.escapeHtml(dimension.name)}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0 recommendation-full-text">${this.escapeHtml(recommendation)}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', detailModalHtml);
+        const detailModalElement = document.getElementById('dimensionRecommendationModal');
+        const detailModal = new bootstrap.Modal(detailModalElement);
+        detailModal.show();
+
+        detailModalElement.addEventListener('hidden.bs.modal', function () {
             this.remove();
         });
     }
@@ -853,23 +946,24 @@ class FileManagementApp {
                 </div>
                 
                 <div class="row g-3">
-                    ${Object.entries(evaluation.scores).map(([key, dimension]) => `
+                    ${Object.entries(evaluation.scores).map(([key, dimension], index) => {
+                        const fullRecommendation = this.getDimensionRecommendationText(evaluation, key, index);
+                        const recommendationPreview = this.getRecommendationPreview(fullRecommendation, 110);
+
+                        return `
                         <div class="col-lg-6">
                             <div class="card border-0 shadow-sm h-100 hover-lift" style="transition: transform 0.2s;">
                                 <div class="card-body p-4">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">${dimension.name}</h6>
-                                            <small class="text-muted">${dimension.questions} preguntas evaluadas</small>
-                                        </div>
-                                        <div class="text-end">
-                                            <h4 class="mb-0" style="color: ${this.getScoreColor(dimension.score)};">${dimension.score}%</h4>
-                                            <small class="text-muted">${dimension.obtained}/${dimension.maximum} pts</small>
+                                    <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+                                        <h6 class="mb-0 fw-bold dimension-single-line">${dimension.name} · ${dimension.questions} preguntas</h6>
+                                        <div class="text-end flex-shrink-0">
+                                            <strong style="color: ${this.getScoreColor(dimension.score)};">${dimension.score}%</strong>
+                                            <small class="text-muted ms-1">(${dimension.obtained}/${dimension.maximum} pts)</small>
                                         </div>
                                     </div>
                                     
                                     <!-- Barra de Progreso Mejorada -->
-                                    <div class="position-relative mb-3">
+                                    <div class="position-relative mb-2">
                                         <div class="progress" style="height: 12px; border-radius: 10px; background-color: #f0f0f0;">
                                             <div class="progress-bar" role="progressbar" 
                                                  style="width: ${dimension.score}%; background: linear-gradient(90deg, ${this.getScoreColor(dimension.score)} 0%, ${this.getScoreColor(dimension.score)}dd 100%); border-radius: 10px;"
@@ -879,27 +973,27 @@ class FileManagementApp {
                                     </div>
                                     
                                     <!-- Métricas Detalladas -->
-                                    <div class="row g-2 mt-2">
-                                        <div class="col-4">
-                                            <div class="text-center p-2 bg-light rounded">
-                                                <small class="text-muted d-block">Rating</small>
-                                                <div class="d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.8rem;"></i>
-                                                    <strong>${dimension.rating.toFixed(1)}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-8">
-                                            <div class="text-center p-2 bg-light rounded">
-                                                <small class="text-muted d-block">Estado</small>
-                                                <strong class="small">${this.getMaturityStatus(dimension.score)}</strong>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex align-items-center justify-content-between bg-light rounded p-2 mb-2 gap-2">
+                                        <small class="text-muted dimension-single-line">
+                                            <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.75rem;"></i>
+                                            Rating: <strong>${dimension.rating.toFixed(1)}</strong>
+                                        </small>
+                                        <small class="text-muted flex-shrink-0">
+                                            Estado: <strong>${this.getMaturityStatus(dimension.score)}</strong>
+                                        </small>
                                     </div>
+
+                                    ${recommendationPreview ? `
+                                        <div class="d-flex align-items-center gap-2 dimension-recommendation-line">
+                                            <small class="text-muted recommendation-preview-line" title="${this.escapeHtml(fullRecommendation)}">${this.escapeHtml(recommendationPreview)}</small>
+                                            <button type="button" class="btn btn-link btn-sm p-0 flex-shrink-0 recommendation-more-link" onclick="app.showRecommendationModal('${key}')">Ver Más</button>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </div>
                 
                 <!-- Nota al pie -->

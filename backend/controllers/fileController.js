@@ -645,6 +645,7 @@ const getCyberSecurityEvaluation = async (req, res) => {
           maturityDescription: evaluationResult.maturityDescription || '',
           maturityColor: evaluationResult.maturityColor || '#6c757d',
           scores: evaluationResult.scores || {},
+          dimensionRecommendations: evaluationResult.dimensionRecommendations || {},
           recommendations: evaluationResult.recommendations || [],
           questionsAnalyzed: evaluationResult.questionsAnalyzed || 0,
           confidence: evaluationResult.confidence || 85,
