@@ -671,19 +671,24 @@ class FileManagementApp {
     }
 
     /**
-     * Mostrar modal con detalles de evaluación
+     * Mostrar modal con detalles de evaluación (optimizado para performance)
      */
     showEvaluationModal(data) {
         this.currentEvaluationData = data.evaluation || null;
 
-        // Crear modal dinámicamente con diseño ejecutivo mejorado
-        const modalHtml = `
-            <div class="modal fade" id="evaluationModal" tabindex="-1">
+        // Crear estructura base del modal rápidamente
+        const baseModalHtml = `
+            <div class="modal fade" id="evaluationModal" tabindex="-1" data-bs-backdrop="static">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-body p-0 position-relative">
-                            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index: 10;"></button>
-                            ${this.renderEvaluationContent(data)}
+                        <div class="modal-body p-0 position-relative" id="evaluationModalBody">
+                            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar" style="z-index: 10;"></button>
+                            <div class="text-center p-5" id="evaluationLoadingPlaceholder">
+                                <div class="spinner-border text-primary mb-3" style="width: 2rem; height: 2rem;" role="status">
+                                    <span class="visually-hidden">Cargando evaluación...</span>
+                                </div>
+                                <p class="text-muted">Cargando evaluación...</p>
+                            </div>
                         </div>
                         <div class="modal-footer bg-light border-top-0 py-2">
                             <div class="d-flex align-items-center justify-content-between w-100">
@@ -712,20 +717,52 @@ class FileManagementApp {
         // Remover modal existente si hay uno
         const existingModal = document.getElementById('evaluationModal');
         if (existingModal) {
+            // Limpiar listeners antes de remover
+            const bsModal = bootstrap.Modal.getInstance(existingModal);
+            if (bsModal) {
+                bsModal.hide();
+            }
             existingModal.remove();
         }
 
-        // Agregar nuevo modal al body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        // Agregar modal al body
+        document.body.insertAdjacentHTML('beforeend', baseModalHtml);
+        const modalElement = document.getElementById('evaluationModal');
 
-        // Mostrar modal
-        const modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+        // Mostrar modal con contenido placeholder
+        const modal = new bootstrap.Modal(modalElement);
         modal.show();
 
-        // Remover modal del DOM cuando se cierre
-        document.getElementById('evaluationModal').addEventListener('hidden.bs.modal', function () {
-            this.remove();
+        // Renderizar contenido asincrónico después de abrir el modal
+        requestAnimationFrame(() => {
+            const contentHtml = this.renderEvaluationContent(data);
+            const bodyDiv = document.getElementById('evaluationModalBody');
+            if (bodyDiv) {
+                // Remover placeholder y agregar contenido real
+                const placeholder = document.getElementById('evaluationLoadingPlaceholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                bodyDiv.innerHTML = `
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar" style="z-index: 10;"></button>
+                    ${contentHtml}
+                `;
+            }
         });
+
+        // Limpiar listeners y remover modal cuando se cierre
+        const handleModalHidden = () => {
+            if (modalElement) {
+                // Remover focus de cualquier elemento antes de remover el modal
+                if (document.activeElement && modalElement.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
+                modalElement.removeEventListener('hidden.bs.modal', handleModalHidden);
+                modalElement.remove();
+            }
+        };
+
+        modalElement.addEventListener('hidden.bs.modal', handleModalHidden, { once: true });
     }
 
     /**
@@ -784,11 +821,15 @@ class FileManagementApp {
 
         const existingModal = document.getElementById('dimensionRecommendationModal');
         if (existingModal) {
+            const bsModal = bootstrap.Modal.getInstance(existingModal);
+            if (bsModal) {
+                bsModal.hide();
+            }
             existingModal.remove();
         }
 
         const detailModalHtml = `
-            <div class="modal fade" id="dimensionRecommendationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal fade" id="dimensionRecommendationModal" tabindex="-1">
                 <div class="modal-dialog modal-lg modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -796,7 +837,7 @@ class FileManagementApp {
                                 <i class="bi bi-lightbulb me-2"></i>
                                 Recomendación - ${this.escapeHtml(dimension.name)}
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                         </div>
                         <div class="modal-body">
                             <p class="mb-0 recommendation-full-text">${this.escapeHtml(recommendation)}</p>
@@ -814,9 +855,15 @@ class FileManagementApp {
         const detailModal = new bootstrap.Modal(detailModalElement);
         detailModal.show();
 
-        detailModalElement.addEventListener('hidden.bs.modal', function () {
-            this.remove();
-        });
+        const handleModalHidden = () => {
+            if (document.activeElement && detailModalElement.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+            detailModalElement.removeEventListener('hidden.bs.modal', handleModalHidden);
+            detailModalElement.remove();
+        };
+
+        detailModalElement.addEventListener('hidden.bs.modal', handleModalHidden, { once: true });
     }
 
     /**
@@ -994,19 +1041,6 @@ class FileManagementApp {
                         </div>
                     `;
                     }).join('')}
-                </div>
-                
-                <!-- Nota al pie -->
-                <div class="alert alert-light border mt-4 mb-0">
-                    <div class="d-flex align-items-start">
-                        <i class="bi bi-info-circle text-primary me-2 mt-1"></i>
-                        <div>
-                            <strong>Análisis Completo Disponible</strong>
-                            <p class="mb-0 small text-muted mt-1">
-                                Descargue el informe PDF completo para ver recomendaciones detalladas, plan de acción estratégico y análisis personalizado con IA para cada dimensión.
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;
