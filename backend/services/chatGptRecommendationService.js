@@ -439,6 +439,8 @@ class ChatGptRecommendationService {
             
             console.log(`🤖 Generando próximos pasos estratégicos con ChatGPT...`);
             
+            const strategicMaxTokens = Math.max(this.config.maxTokens, 1100);
+
             const completion = await Promise.race([
                 this.openai.chat.completions.create({
                     model: this.config.model,
@@ -454,17 +456,55 @@ class ChatGptRecommendationService {
                     ],
                     temperature: this.config.temperature,
                     seed: 42,
-                    max_completion_tokens: this.config.maxTokens
+                    max_completion_tokens: strategicMaxTokens
                 }),
                 new Promise((_, reject) => 
                     setTimeout(() => reject(new Error('ChatGPT request timeout')), this.config.timeout)
                 )
             ]);
 
-            const steps = completion.choices[0]?.message?.content?.trim();
+            let steps = completion.choices[0]?.message?.content?.trim();
             
             if (!steps) {
                 throw new Error('Empty strategic steps from ChatGPT');
+            }
+
+            // Asegurar suficiente detalle narrativo en cada paso.
+            const minWords = 320;
+            const words = this.countWords(steps);
+            if (words < minWords) {
+                console.log(`⚠️ Próximos pasos breves (${words} palabras). Reintentando expansión...`);
+                try {
+                    const expandedCompletion = await Promise.race([
+                        this.openai.chat.completions.create({
+                            model: this.config.model,
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: this.getStrategicStepsSystemPrompt()
+                                },
+                                {
+                                    role: "user",
+                                    content: `${prompt}\n\nLa versión anterior quedó breve. Reescribe los 5 pasos con mayor nivel de detalle y explicación para audiencia mixta.\n\nRequisitos obligatorios:\n- Mantener exactamente 5 pasos numerados\n- 65-100 palabras por paso\n- Explicar el porqué de la acción en lenguaje simple\n- Incluir de forma explícita periodo, alcance, ejemplo y valor esperado\n- Redacción clara, profesional y no robótica\n\nTexto previo:\n${steps}`
+                                }
+                            ],
+                            temperature: this.config.temperature,
+                            seed: 42,
+                            max_completion_tokens: strategicMaxTokens
+                        }),
+                        new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('ChatGPT strategic steps expansion timeout')), this.config.timeout)
+                        )
+                    ]);
+
+                    const expandedSteps = expandedCompletion.choices[0]?.message?.content?.trim();
+                    if (expandedSteps && this.countWords(expandedSteps) >= minWords) {
+                        steps = expandedSteps;
+                        console.log(`✅ Próximos pasos expandidos (${this.countWords(steps)} palabras)`);
+                    }
+                } catch (expandError) {
+                    console.log(`⚠️ No se pudo expandir próximos pasos, se usa versión original (${words} palabras)`);
+                }
             }
 
             console.log(`✅ Próximos pasos estratégicos ChatGPT generados (${steps.length} caracteres)`);
@@ -495,10 +535,10 @@ class ChatGptRecommendationService {
 
         const stepForDimension = (index, dim) => {
             const action = `Fortalecer la dimensión ${dim.name}`;
-            const detail = `Definir e implementar un plan operativo por fases para cerrar brechas en ${dim.name}, priorizando controles con mayor impacto en reducción de riesgo.`;
-            const scope = `Procesos clave de ${dim.name}, equipos operativos involucrados y responsables de control.`;
-            const example = `Por ejemplo, iniciar con un piloto en el proceso con mayor exposición y luego escalar al resto del área.`;
-            const value = `Disminución de exposición en ${dim.name} y mejora de trazabilidad para auditoría y comité ejecutivo.`;
+            const detail = `Definir e implementar un plan operativo por fases para cerrar brechas en ${dim.name}, priorizando controles con mayor impacto en reducción de riesgo y continuidad operativa. La acción debe iniciar con un diagnóstico puntual de causas, establecer hitos semanales y fijar responsables por actividad para asegurar ejecución consistente.`;
+            const scope = `Procesos clave de ${dim.name}, equipos operativos involucrados y responsables de control, incluyendo coordinación con liderazgo para remover bloqueos de implementación.`;
+            const example = `Por ejemplo, iniciar con un piloto en el proceso con mayor exposición, medir resultados a 30 días y escalar progresivamente con ajustes validados al resto del área.`;
+            const value = `Disminución de exposición en ${dim.name}, mayor previsibilidad operativa y mejora de trazabilidad para auditoría y comité ejecutivo.`;
             return `${index}. ${action}: ${detail} Timeframe: ${monthsByMaturity} meses. Alcance: ${scope} Ejemplo: ${example} Valor esperado: ${value}`;
         };
 
@@ -506,8 +546,8 @@ class ChatGptRecommendationService {
             stepForDimension(1, top3[0] || { name: 'prioritaria 1', score: 0 }),
             stepForDimension(2, top3[1] || { name: 'prioritaria 2', score: 0 }),
             stepForDimension(3, top3[2] || { name: 'prioritaria 3', score: 0 }),
-            `4. Ejecutar capacitación aplicada y simulaciones dirigidas: Implementar entrenamiento práctico orientado a los riesgos actuales detectados, con énfasis en decisiones operativas y respuesta coordinada. Timeframe: ${monthsByMaturity} meses. Alcance: Equipos técnicos, dueños de proceso y líderes de área. Ejemplo: Simulacros trimestrales con escenarios reales de incidente y lecciones aprendidas. Valor esperado: Reducción del error operativo y mayor velocidad de respuesta.`,
-            `5. Institucionalizar seguimiento ejecutivo y mejora continua: Establecer una rutina mensual de revisión con indicadores, desvíos y acciones correctivas para sostener avances. Timeframe: ${monthsByMaturity} meses. Alcance: Comité de riesgo, seguridad y gerencias clave. Ejemplo: Tablero con KPIs (cobertura de controles, tiempo de remediación y brechas críticas abiertas). Valor esperado: Gobierno continuo de ciberseguridad y avance estable del nivel de madurez.`
+            `4. Ejecutar capacitación aplicada y simulaciones dirigidas: Implementar entrenamiento práctico orientado a los riesgos detectados, explicando de forma simple cómo cada rol impacta la seguridad y qué decisiones deben tomarse ante incidentes. Timeframe: ${monthsByMaturity} meses. Alcance: Equipos técnicos, dueños de proceso y líderes de área. Ejemplo: Simulacros trimestrales con escenarios reales, matriz de decisiones y revisión de lecciones aprendidas. Valor esperado: Reducción del error operativo, mejor coordinación entre áreas y mayor velocidad de respuesta.`,
+            `5. Institucionalizar seguimiento ejecutivo y mejora continua: Establecer una rutina mensual de revisión con indicadores, desvíos y acciones correctivas para sostener avances y evitar retrocesos. Timeframe: ${monthsByMaturity} meses. Alcance: Comité de riesgo, seguridad y gerencias clave. Ejemplo: Tablero con KPIs (cobertura de controles, tiempo de remediación, brechas críticas abiertas) y plan de acción con responsables y fechas. Valor esperado: Gobierno continuo de ciberseguridad, decisiones basadas en evidencia y avance estable del nivel de madurez.`
         ];
 
         return lines.join('\n');
@@ -758,6 +798,12 @@ Generar exactamente 5 pasos estratégicos numerados del 1 al 5.
 CADA PASO DEBE INCLUIR:
 [Número]. [Acción específica para mejorar dimensión X]: [Descripción concreta y explicada en lenguaje ejecutivo]. Timeframe: [X meses]. Alcance: [áreas/procesos impactados]. Ejemplo: [caso práctico breve de implementación]. Valor esperado: [beneficio medible y específico].
 
+NIVEL DE DETALLE OBLIGATORIO:
+- Cada paso debe tener entre 65 y 100 palabras
+- Explicar qué se hará, por qué es importante y cómo se implementará
+- Redacción clara para lectores técnicos y no técnicos
+- Evitar frases genéricas o superficiales
+
 CRITERIOS:
 - Enfoque práctico y realista para PYMES
 - Retorno de inversión claro
@@ -905,6 +951,12 @@ METODOLOGÍA OBLIGATORIA:
 
 FORMATO EXACTO:
 "[N]. [Acción específica dimensión X]: [Descripción concreta y explicada]. Timeframe: [X meses]. Alcance: [áreas/procesos impactados]. Ejemplo: [caso práctico breve]. Valor esperado: [beneficio medible]."
+
+NIVEL DE DETALLE OBLIGATORIO:
+- 65 a 100 palabras por cada paso
+- Explicar de forma simple el porqué de la acción
+- Mantener lenguaje claro para audiencias técnicas y no técnicas
+- Incluir implementación práctica, no solo intención
 
 ❌ PROHIBIDO:
 - Cambiar orden de prioridades
